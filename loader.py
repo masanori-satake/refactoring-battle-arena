@@ -47,7 +47,8 @@ rl.on('line', (line) => {{
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            encoding='utf-8'
         )
         # エージェントを初期化
         self._send({"method": "init", "mark": self.mark})
