@@ -4,14 +4,35 @@
 1. **テストを死守せよ**: `test_logic.py` は変更禁止。`pytest` を命綱にしてください。
 2. **AI(ChatGPT等)は封印**: 自分の指で原則を書き込んでください。メッキは剥げます。
 
+## ⚙️ 環境セットアップ
+
+本プロジェクトでは Python と JavaScript の両方でエージェントを開発できます。
+
+### Python で参加する場合
+- Python 3.10 以上がインストールされていることを確認してください。
+- 依存ライブラリのインストール:
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+### JavaScript で参加する場合
+- Python 3.10 以上に加え、**Node.js (v20以上推奨)** がインストールされていることを確認してください。
+- Python の依存ライブラリも必要です（テストやツールの実行に使用します）:
+  ```bash
+  pip install -r requirements.txt
+  ```
+
 ## 🧪 テストの実行方法
 本プロジェクトでは `pytest` を使用して動作確認を行います。以下のコマンドでテストを実行できます。
 ```bash
 # デフォルト (originalディレクトリ) のテスト
 pytest test_logic.py
 
-# 特定のディレクトリのエージェントをテストする場合
-AGENT_DIR=participant1 pytest test_logic.py
+# Pythonエージェントのテスト
+AGENT_DIR=participant_py pytest test_logic.py
+
+# JavaScriptエージェントのテスト
+AGENT_DIR=participant_js pytest test_logic.py
 ```
 すべてのテストがパスすることを確認しながら進めてください。
 
@@ -57,15 +78,47 @@ python3 budokai.py --strategy original --count 10
 ---
 
 ## 📖 インターフェース仕様
-`logic.py` で実装すべきインターフェースは以下の通りです。
 
-### 定数
-- `AGENT_NAME` (str): エージェントの識別名。参加者は自分自身の名前に書き換えてください。※`original` は使用禁止です。
+JavaScript で参加する場合、ディレクトリ内に `logic.js` を作成してください。Python の場合は `logic.py` を作成します。
 
-### メソッド
-#### `GameAgent.get_name()`
-- **戻り値**: `str`: `AGENT_NAME` の値を返してください。
+### Python (`logic.py`)
+#### 定数
+- `AGENT_NAME` (str): エージェントの識別名。※`original` は使用禁止。
 
+#### メソッド
+- `GameAgent.get_name()`: `AGENT_NAME` を返す。
+- `GameAgent.get_action(payload_buffer, strategy_type="normal")`: 次の手（0-8）を返す。
+
+### JavaScript (`logic.js`)
+`module.exports` を使用して `GameAgent` クラスをエクスポートしてください。
+
+#### 実装例 (`logic.js`)
+```javascript
+const AGENT_NAME = "my-js-agent";
+
+class GameAgent {
+    constructor(mark) {
+        this.mark = mark; // "O" または "X"
+    }
+
+    get_name() {
+        return AGENT_NAME;
+    }
+
+    get_action(payload_buffer, strategy_type = "normal") {
+        // payload_buffer: 9要素のリスト (null, "O", "X")
+        // strategy_type: "normal" または "original"
+        // 戻り値: 0-8 の数値、または置ける場所がない場合は null
+
+        // ここにロジックを記述
+        return payload_buffer.indexOf(null);
+    }
+}
+
+module.exports = { GameAgent };
+```
+
+### 共通仕様
 #### `GameAgent.get_action(payload_buffer, strategy_type="normal")`
 - **引数**:
 - `payload_buffer` (list): 盤面の状態を表す 9 要素のリスト。

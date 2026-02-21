@@ -1,7 +1,8 @@
 import pytest
 import os
 import shutil
-from budokai import check_winner, run_match, load_game_agent, main
+from budokai import check_winner, run_match, main
+from loader import get_agent_class
 from unittest.mock import patch, MagicMock
 
 def test_check_winner_budokai():
@@ -43,17 +44,16 @@ def test_run_match_exception():
     res = run_match(ErrorAgent("O"), ErrorAgent("X"), "normal")
     assert res == "Draw"
 
-def test_load_game_agent_budokai(tmp_path):
+def test_get_agent_class_budokai(tmp_path):
     d = tmp_path / "test_agent"
     d.mkdir()
     (d / "logic.py").write_text("class GameAgent: pass")
 
-    module = load_game_agent(str(d))
-    assert module is not None
-    assert hasattr(module, "GameAgent")
+    agent_class = get_agent_class(str(d))
+    assert agent_class is not None
 
-def test_load_game_agent_not_found_budokai():
-    assert load_game_agent("non_existent_dir") is None
+def test_get_agent_class_not_found_budokai():
+    assert get_agent_class("non_existent_dir") is None
 
 @patch('sys.argv', ['budokai.py', '--count', '1'])
 @patch('builtins.print')

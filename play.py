@@ -1,18 +1,7 @@
 import sys
 import os
 import argparse
-import importlib.util
-
-def load_game_agent(directory):
-    logic_path = os.path.join(directory, "logic.py")
-    if not os.path.exists(logic_path):
-        print(f"Error: {logic_path} not found.")
-        sys.exit(1)
-
-    spec = importlib.util.spec_from_file_location("logic", logic_path)
-    logic_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(logic_module)
-    return logic_module.GameAgent
+from loader import get_agent_class
 
 def print_board(board):
     print("\n")
@@ -109,5 +98,8 @@ if __name__ == "__main__":
     parser.add_argument('--dir', type=str, default='original', help='Directory containing logic.py')
     args = parser.parse_args()
 
-    AgentClass = load_game_agent(args.dir)
+    AgentClass = get_agent_class(args.dir)
+    if not AgentClass:
+        print(f"Error: No agent found in {args.dir}")
+        sys.exit(1)
     play_game(AgentClass)

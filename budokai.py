@@ -1,22 +1,8 @@
 import os
 import sys
-import importlib.util
 import argparse
 from collections import defaultdict
-
-def load_game_agent(directory):
-    logic_path = os.path.join(directory, "logic.py")
-    if not os.path.exists(logic_path):
-        return None
-
-    try:
-        spec = importlib.util.spec_from_file_location(f"logic_{directory.replace(os.sep, '_')}", logic_path)
-        logic_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(logic_module)
-        return logic_module
-    except Exception as e:
-        print(f"Error loading agent from {directory}: {e}")
-        return None
+from loader import get_agent_class
 
 def check_winner(board):
     lines = [
@@ -82,28 +68,27 @@ def main():
     for root, dirs, files in os.walk('.'):
         # Exclude hidden directories
         dirs[:] = [d for d in dirs if not d.startswith('.')]
-        if 'logic.py' in files:
-            dir_name = os.path.relpath(root, '.')
-            if dir_name == '.': continue # Skip root logic.py if it exists (it shouldn't anymore)
+        dir_name = os.path.relpath(root, '.')
+        if dir_name == '.': continue # Skip root directory
 
-            module = load_game_agent(dir_name)
-            if module:
-                try:
-                    agent_instance = module.GameAgent(mark='O')
-                    name = agent_instance.get_name()
+        AgentClass = get_agent_class(dir_name)
+        if AgentClass:
+            try:
+                agent_instance = AgentClass(mark='O')
+                name = agent_instance.get_name()
 
-                    # Validation: non-original dir claiming 'original' name
-                    if name == 'original' and dir_name != 'original':
-                        print(f"Disqualifying {dir_name}: Claiming name 'original' outside original directory.")
-                        continue
+                # Validation: non-original dir claiming 'original' name
+                if name == 'original' and dir_name != 'original':
+                    print(f"Disqualifying {dir_name}: Claiming name 'original' outside original directory.")
+                    continue
 
-                    agents_info.append({
-                        'dir': dir_name,
-                        'name': name,
-                        'module': module
-                    })
-                except Exception as e:
-                    print(f"Error initializing agent from {dir_name}: {e}")
+                agents_info.append({
+                    'dir': dir_name,
+                    'name': name,
+                    'agent_class': AgentClass
+                })
+            except Exception as e:
+                print(f"Error initializing agent from {dir_name}: {e}")
 
     if len(agents_info) < 2:
         print("Not enough agents found to run a tournament.")
@@ -125,13 +110,13 @@ def main():
             dir1 = dirs[i]
             dir2 = dirs[j]
 
-            agent1_mod = agents_info[i]['module']
-            agent2_mod = agents_info[j]['module']
+            AgentClass1 = agents_info[i]['agent_class']
+            AgentClass2 = agents_info[j]['agent_class']
 
             # Games where dir1 is O (first)
             for _ in range(args.count):
-                a1 = agent1_mod.GameAgent(mark='O')
-                a2 = agent2_mod.GameAgent(mark='X')
+                a1 = AgentClass1(mark='O')
+                a2 = AgentClass2(mark='X')
                 res = run_match(a1, a2, args.strategy)
                 if res == 'O':
                     results[dir1][dir2]['win'] += 1
@@ -145,8 +130,8 @@ def main():
 
             # Games where dir2 is O (first)
             for _ in range(args.count):
-                a1 = agent1_mod.GameAgent(mark='X')
-                a2 = agent2_mod.GameAgent(mark='O')
+                a1 = AgentClass1(mark='X')
+                a2 = AgentClass2(mark='O')
                 res = run_match(a2, a1, args.strategy)
                 if res == 'O': # a2 wins
                     results[dir2][dir1]['win'] += 1

@@ -2,7 +2,8 @@ import pytest
 import os
 import sys
 from unittest.mock import patch, MagicMock
-from play import check_winner, load_game_agent, play_game
+from play import check_winner, play_game
+from loader import get_agent_class
 
 def test_check_winner():
     # Horizontal wins
@@ -23,16 +24,15 @@ def test_check_winner():
     # Ongoing
     assert check_winner(["O", "X", None, None, None, None, None, None, None]) is None
 
-def test_load_game_agent():
+def test_get_agent_class():
     # Test loading from 'original'
-    AgentClass = load_game_agent("original")
+    AgentClass = get_agent_class("original")
     assert AgentClass is not None
     agent = AgentClass(mark="O")
     assert agent.get_name() == "original"
 
-def test_load_game_agent_not_found():
-    with pytest.raises(SystemExit):
-        load_game_agent("non_existent_dir")
+def test_get_agent_class_not_found():
+    assert get_agent_class("non_existent_dir") is None
 
 @patch('play.check_winner')
 @patch('builtins.input')
