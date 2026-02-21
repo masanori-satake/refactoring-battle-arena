@@ -1,5 +1,21 @@
 import pytest
-from logic import GameAgent
+import os
+import importlib.util
+import sys
+
+def load_game_agent():
+    directory = os.environ.get('AGENT_DIR', 'original')
+    logic_path = os.path.join(directory, "logic.py")
+    if not os.path.exists(logic_path):
+        print(f"Error: {logic_path} not found.")
+        sys.exit(1)
+
+    spec = importlib.util.spec_from_file_location("logic", logic_path)
+    logic_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(logic_module)
+    return logic_module.GameAgent
+
+GameAgent = load_game_agent()
 
 @pytest.fixture
 def agent():

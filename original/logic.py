@@ -4,12 +4,20 @@ import random
 V1 = "O"
 V2 = "X"
 
+AGENT_NAME = "original"
+
 class GameAgent:
     def __init__(self, mark=V1):
         # 認証情報の初期化
         self.auth_token_secret = mark
         self.peer_identity_hash = V2 if mark == V1 else V1
         self.connection_retry_limit = 3
+
+    def get_name(self):
+        """
+        エージェントの名前を返します。
+        """
+        return AGENT_NAME
 
     def get_action(self, payload_buffer, strategy_type="normal"):
         """
