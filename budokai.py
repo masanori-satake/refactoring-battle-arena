@@ -48,8 +48,12 @@ def run_match(agent_o, agent_x, strategy_type):
             if move is None or not (0 <= move <= 8) or board[move] is not None:
                 raise ValueError("Invalid move")
             board[move] = mark
-        except Exception:
+        except Exception as e:
             # 現在のエージェントが失敗しました。もう一方のエージェントも同じ盤面で失敗するか確認します。
+            # エラー内容を表示（特にJSプロセスの異常終了などを検知するため）
+            if not isinstance(e, ValueError):
+                print(f"警告: エージェント {turn} で予期せぬエラーが発生しました: {e}", file=sys.stderr)
+
             other_agent = agent_x if turn == 'O' else agent_o
             try:
                 other_move = other_agent.get_action(board[:], strategy_type=strategy_type)
@@ -66,7 +70,7 @@ def run_match(agent_o, agent_x, strategy_type):
 def main():
     parser = argparse.ArgumentParser(description='天下一武道会: 三目並べトーナメント')
     parser.add_argument('--strategy', type=str, default='normal', help='使用する戦略タイプ (normal/original)')
-    parser.add_argument('--count', type=int, default=10, help='各ターン（先攻/後攻）でプレイするゲーム数')
+    parser.add_argument('--count', type=int, default=50, help='各ターン（先攻/後攻）でプレイするゲーム数')
     args = parser.parse_args()
 
     # 全エージェントを検索
@@ -149,21 +153,45 @@ def main():
                     results[dir2][dir1]['draw'] += 1
                     results[dir1][dir2]['draw'] += 1
 
+    # マッチ結果の集計（統計的有意差を考慮）
+    match_results = defaultdict(lambda: {'win': 0, 'loss': 0, 'draw': 0})
+    for i in range(len(dirs)):
+        for j in range(i + 1, len(dirs)):
+            dir1 = dirs[i]
+            dir2 = dirs[j]
+            w1 = results[dir1][dir2]['win']
+            w2 = results[dir1][dir2]['loss']
+
+            # 有意差判定のロジック: |w1 - w2| > 1.96 * sqrt(w1 + w2)
+            # w1 + w2 は決着がついたゲーム数
+            decisive_games = w1 + w2
+            if decisive_games > 0 and abs(w1 - w2) > 1.96 * (decisive_games**0.5):
+                if w1 > w2:
+                    match_results[dir1]['win'] += 1
+                    match_results[dir2]['loss'] += 1
+                else:
+                    match_results[dir1]['loss'] += 1
+                    match_results[dir2]['win'] += 1
+            else:
+                match_results[dir1]['draw'] += 1
+                match_results[dir2]['draw'] += 1
+
     # 結果テーブル出力
     print(f"\nトーナメント結果 (戦略: {args.strategy})")
-    header = f"{'Agent (Dir)':<30} | {'Win':<5} | {'Loss':<5} | {'Draw':<5}"
+    print("※勝敗は統計的有意差（p < 0.05, 二項検定近似）に基づいて判定されています。")
+    header = f"{'Agent (Dir)':<30} | {'Match Win':<10} | {'Match Loss':<10} | {'Match Draw':<10}"
     print(header)
     print("-" * len(header))
 
-    # エージェントを勝利数でソート
-    sorted_dirs = sorted(dirs, key=lambda d: sum(results[d][opp]['win'] for opp in results[d]), reverse=True)
+    # エージェントをマッチ勝利数でソート（同数の場合は引き分け数でソート）
+    sorted_dirs = sorted(dirs, key=lambda d: (match_results[d]['win'], match_results[d]['draw']), reverse=True)
 
     for d in sorted_dirs:
         name = agent_names[d]
-        total_win = sum(results[d][opp]['win'] for opp in results[d])
-        total_loss = sum(results[d][opp]['loss'] for opp in results[d])
-        total_draw = sum(results[d][opp]['draw'] for opp in results[d])
-        print(f"{f'{name} ({d})':<30} | {total_win:<5} | {total_loss:<5} | {total_draw:<5}")
+        mw = match_results[d]['win']
+        ml = match_results[d]['loss']
+        md = match_results[d]['draw']
+        print(f"{f'{name} ({d})':<30} | {mw:<10} | {ml:<10} | {md:<10}")
 
 if __name__ == "__main__":
     main()

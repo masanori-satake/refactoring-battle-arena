@@ -3,6 +3,7 @@ import sys
 import importlib.util
 import subprocess
 import json
+import shutil
 
 class JsGameAgent:
     def __init__(self, directory, mark):
@@ -13,6 +14,9 @@ class JsGameAgent:
         self._start_process()
 
     def _start_process(self):
+        # Node.jsの実行ファイルを探す（Windows環境対策）
+        node_bin = shutil.which('node') or shutil.which('node.exe') or 'node'
+
         # PythonとJSを橋渡しするための小さなヘルパースクリプト
         # Windowsのパス（バックスラッシュ）がJSの文字列内で正しくエスケープされるようにjson.dumpsを使用
         js_path_escaped = json.dumps(self.js_path)
@@ -43,7 +47,7 @@ rl.on('line', (line) => {{
 }});
 """
         self.process = subprocess.Popen(
-            ['node', '-e', bridge_code],
+            [node_bin, '-e', bridge_code],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -78,7 +82,13 @@ rl.on('line', (line) => {{
 
     def __del__(self):
         if hasattr(self, 'process') and self.process:
-            self.process.terminate()
+            try:
+                self.process.terminate()
+                # プロセスが確実に終了するのを待機
+                self.process.wait(timeout=1)
+            except:
+                # タイムアウトや既に終了している場合は無視
+                pass
 
 def get_agent_class(directory):
     logic_py = os.path.join(directory, "logic.py")
