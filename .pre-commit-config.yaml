@@ -6,7 +6,7 @@ repos:
         description: "Node.jsのセットアップとbudokai.pyの実行を自動化します。"
         entry: python3 budokai.py
         language: node
-        language_version: "20.18.0"
+        language_version: lts
         pass_filenames: false
         stages: [manual]
         args:
