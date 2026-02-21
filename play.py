@@ -26,12 +26,19 @@ def check_winner(board):
 def play_game():
     while True:
         print("\n=== 三目並べ: 人間 vs AI ===")
-        print("先攻・後攻を選択してください:")
+
+        print("\nAIの戦略を選択してください:")
+        print("1: デフォルト (ランダム)")
+        print("2: 勝利優先 (リーチがあれば取る/防ぐ)")
+        strat_choice = input("選択 (1 or 2): ")
+        s_type = "win_priority" if strat_choice == "2" else "normal"
+
+        print("\n先攻・後攻を選択してください:")
         print("1: 人間 (O)")
         print("2: AI (O)")
-        choice = input("選択 (1 or 2): ")
+        order_choice = input("選択 (1 or 2): ")
 
-        if choice == "2":
+        if order_choice == "2":
             human_mark = "X"
             ai_mark = "O"
             turn = "AI"
@@ -69,8 +76,8 @@ def play_game():
                         print("数字を入力してください。")
             else:
                 print(f"AIの番 ({ai_mark})...")
-                # 勝利優先戦略を使用
-                move = agent.get_action(board, s_type="win_priority")
+                # 選択された戦略を使用
+                move = agent.get_action(board, s_type=s_type)
                 if move is not None and board[move] is None:
                     board[move] = ai_mark
                     print(f"AIは {move} を選択しました。")

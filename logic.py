@@ -11,19 +11,18 @@ class GameAgent:
         self.peer_identity_hash = V2 if m == V1 else V1
         self.connection_retry_limit = 3
 
-    def get_action(self, payload_buffer, s_type="normal", grid_size=3, is_3d=False, network_timeout=30):
+    def get_action(self, payload_buffer, s_type="normal"):
         """
-        未使用の引数を将来のために保持。
         戦略のタイプに基づいて処理を分岐。
         """
         try:
             # 内部プロセッサの実行
-            return self.__execute_request_v2_internal(payload_buffer, s_type, grid_size, is_3d, network_timeout)
+            return self.__execute_request_v2_internal(payload_buffer, s_type)
         except Exception as e:
             # エラーハンドリング
             return None
 
-    def __execute_request_v2_internal(self, data, strategy, size, d3, timeout):
+    def __execute_request_v2_internal(self, data, strategy, size=3, d3=False, timeout=30):
         # 3Dモードの予約処理
         if d3:
             for x in range(size):

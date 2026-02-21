@@ -15,6 +15,8 @@ pytest test_logic.py
 作成したエージェントと実際にターミナル上で対戦して動作を確認することができます。
 ```bash
 python3 play.py
+# または
+python play.py
 ```
 - **機能**:
   - 人間 vs AI の対戦（3x3 三目並べ）
