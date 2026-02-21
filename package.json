@@ -1,0 +1,15 @@
+{
+  "name": "tic-tac-toe-refactoring-challenge",
+  "version": "1.0.0",
+  "description": "Refactoring challenge for Tic-Tac-Toe agent",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

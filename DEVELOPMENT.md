@@ -21,23 +21,37 @@
   ```
 
 ## 🧪 テストの実行方法
-本プロジェクトでは `pytest` を使用して動作確認を行います。以下のコマンドでテストを実行できます。
+本プロジェクトでは `pytest` および `Jest` を使用して動作確認を行います。以下のコマンドでテストを実行できます。
+
+### Python テスト
+Python のテスト（`tests/test_*.py`）を実行します。ルートディレクトリにパスを通すため、`PYTHONPATH=.` を付与して実行してください。
+
 ```bash
 # デフォルト (original_pyディレクトリ) のテスト
-pytest test_logic.py
+PYTHONPATH=. pytest tests/test_logic.py
 
 # Pythonエージェントのテスト
-AGENT_DIR=participant_py pytest test_logic.py
+AGENT_DIR=participant_py PYTHONPATH=. pytest tests/test_logic.py
 
-# JavaScriptエージェントのテスト
-AGENT_DIR=participant_js pytest test_logic.py
+# JavaScriptエージェントのテスト (Pythonのテストコード経由でJSロジックを確認)
+AGENT_DIR=participant_js PYTHONPATH=. pytest tests/test_logic.py
 ```
-すべてのテストがパスすることを確認しながら進めてください。
+
+### JavaScript テスト
+JavaScript のテスト（`tests/logic.test.js`）を `Jest` で実行します。
+
+```bash
+# 初回のみ依存ライブラリのインストールが必要
+npm install
+
+# テストの実行
+npm test
+```
 
 ### テストカバレッジの測定
 テストがコードのどの部分をカバーしているかを確認するには、以下のコマンドを実行します。
 ```bash
-pytest --cov=original_py test_logic.py
+PYTHONPATH=. pytest --cov=original_py tests/test_logic.py
 ```
 
 ## 🎮 対戦ツールの実行方法
