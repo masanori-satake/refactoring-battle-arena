@@ -116,7 +116,7 @@ class GameAgent {
 
         // 方法2: 伝統的なループ
         const valid_indices = [];
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < data.length; i++) {
             if (data[i] === null) valid_indices.push(i);
         }
 

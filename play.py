@@ -9,29 +9,50 @@ if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 from loader import get_agent_class
 
-def print_board(board):
+def print_board(board, size):
     print("\n")
-    for i in range(0, 9, 3):
-        # 盤面の値を表示。Noneの場合はインデックス番号を表示
-        row = [board[j] if board[j] is not None else str(j) for j in range(i, i+3)]
-        print(f" {row[0]} | {row[1]} | {row[2]} ")
-        if i < 6:
-            print("---+---+---")
+    for r in range(size):
+        row_cells = []
+        for c in range(size):
+            idx = r * size + c
+            cell = board[idx] if board[idx] is not None else str(idx)
+            row_cells.append(f"{cell:^3}")
+        print(" | ".join(row_cells))
+        if r < size - 1:
+            print("-" * (size * 6 - 1))
 
-def check_winner(board):
-    lines = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], # 横
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], # 縦
-        [0, 4, 8], [2, 4, 6]             # 斜め
-    ]
-    for line in lines:
-        if board[line[0]] == board[line[1]] == board[line[2]] and board[line[0]] is not None:
-            return board[line[0]]
+def check_winner(board, size):
+    win_req = 3 if size <= 3 else 4 if size == 4 else 5
+
+    # 横
+    for r in range(size):
+        for c in range(size - win_req + 1):
+            window = [board[r * size + c + i] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+    # 縦
+    for c in range(size):
+        for r in range(size - win_req + 1):
+            window = [board[(r + i) * size + c] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+    # 斜め
+    for r in range(size - win_req + 1):
+        for c in range(size - win_req + 1):
+            # 右下
+            window = [board[(r + i) * size + (c + i)] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+            # 左下
+            window = [board[(r + i) * size + (c + win_req - 1 - i)] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+
     if all(cell is not None for cell in board):
         return "Draw"
     return None
 
-def play_game(agent_class):
+def play_game(agent_class, size):
     while True:
         print("\n=== 三目並べ: 人間 vs AI ===")
 
@@ -56,11 +77,11 @@ def play_game(agent_class):
             turn = "Human"
 
         agent = agent_class(mark=ai_mark)
-        board = [None] * 9
+        board = [None] * (size * size)
 
         while True:
-            print_board(board)
-            winner = check_winner(board)
+            print_board(board, size)
+            winner = check_winner(board, size)
 
             if winner:
                 if winner == "Draw":
@@ -73,8 +94,8 @@ def play_game(agent_class):
             if turn == "Human":
                 while True:
                     try:
-                        move = int(input(f"あなたの番 ({human_mark})。0-8の番号を入力してください: "))
-                        if 0 <= move <= 8 and board[move] is None:
+                        move = int(input(f"あなたの番 ({human_mark})。0-{size*size-1}の番号を入力してください: "))
+                        if 0 <= move < size * size and board[move] is None:
                             board[move] = human_mark
                             turn = "AI"
                             break
@@ -101,11 +122,12 @@ def play_game(agent_class):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='三目並べ: 人間 vs AI')
-    parser.add_argument('--dir', type=str, default='original', help='エージェントのロジックが含まれるディレクトリ')
+    parser.add_argument('--dir', type=str, default='original_py', help='エージェントのロジックが含まれるディレクトリ')
+    parser.add_argument('--size', type=int, default=3, help='盤面のサイズ (N x N)')
     args = parser.parse_args()
 
     AgentClass = get_agent_class(args.dir)
     if not AgentClass:
         print(f"エラー: {args.dir} にエージェントが見つかりませんでした")
         sys.exit(1)
-    play_game(AgentClass)
+    play_game(AgentClass, args.size)

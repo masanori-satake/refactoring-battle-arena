@@ -23,7 +23,7 @@
 ## 🧪 テストの実行方法
 本プロジェクトでは `pytest` を使用して動作確認を行います。以下のコマンドでテストを実行できます。
 ```bash
-# デフォルト (originalディレクトリ) のテスト
+# デフォルト (original_pyディレクトリ) のテスト
 pytest test_logic.py
 
 # Pythonエージェントのテスト
@@ -37,15 +37,18 @@ AGENT_DIR=participant_js pytest test_logic.py
 ### テストカバレッジの測定
 テストがコードのどの部分をカバーしているかを確認するには、以下のコマンドを実行します。
 ```bash
-pytest --cov=original test_logic.py
+pytest --cov=original_py test_logic.py
 ```
 
 ## 🎮 対戦ツールの実行方法
 作成したエージェントと実際にターミナル上で対戦して動作を確認することができます。**このツールは Python (`logic.py`) と JavaScript (`logic.js`) のどちらのロジックでも共通して利用できます。**
 
 ```bash
-# デフォルト (originalディレクトリ) のエージェントと対戦
+# デフォルト (original_pyディレクトリ) のエージェントと対戦
 python3 play.py
+
+# 盤面サイズを指定して対戦 (例: 5x5)
+python3 play.py --size 5
 
 # 特定のディレクトリのエージェントと対戦する場合
 python3 play.py --dir participant1
@@ -62,7 +65,7 @@ JavaScript で参加する場合、ディレクトリ内に `logic.js` を作成
 
 ### Python (`logic.py`)
 #### 定数
-- `AGENT_NAME` (str): エージェントの識別名。※`original` は使用禁止。
+- `AGENT_NAME` (str): エージェントの識別名。※`original_py` および `original_js` は使用禁止。
 
 #### メソッド
 - `GameAgent.get_name()`: `AGENT_NAME` を返す。
@@ -85,9 +88,9 @@ class GameAgent {
     }
 
     get_action(payload_buffer, strategy_type = "normal") {
-        // payload_buffer: 9要素のリスト (null, "O", "X")
+        // payload_buffer: N*N要素のリスト (null, "O", "X")
         // strategy_type: "normal" または "original"
-        // 戻り値: 0-8 の数値、または置ける場所がない場合は null
+        // 戻り値: マスのインデックス (0 ～ N*N-1)、または置ける場所がない場合は null
 
         // ここにロジックを記述
         return payload_buffer.indexOf(null);
@@ -100,7 +103,7 @@ module.exports = { GameAgent };
 ### 共通仕様
 #### `GameAgent.get_action(payload_buffer, strategy_type="normal")`
 - **引数**:
-  - `payload_buffer` (list): 盤面の状態を表す 9 要素のリスト。
+  - `payload_buffer` (list): 盤面の状態を表す N x N 要素のリスト（3x3なら9要素）。
     - `None` (JSの場合は `null`): 空きマス
     - `"O"`: プレイヤーOのマーク
     - `"X"`: プレイヤーXのマーク
@@ -121,14 +124,16 @@ module.exports = { GameAgent };
 複数のディレクトリに存在するエージェント同士を戦わせるツールです。**Python 同士、JavaScript 同士だけでなく、Python 対 JavaScript の異種言語間対戦も可能です。**
 
 ```bash
-python3 budokai.py --strategy original --count 10
+python3 budokai.py --strategy original --count 10 --size 3
 ```
 - **オプション**:
   - `--strategy`: 使用する戦略（`normal` または `original`）を指定します。
   - `--count`: 各ペアで、先攻・後攻をそれぞれ何回ずつプレイするかを指定します（デフォルト10回、計20試合）。
+  - `--size`: 盤面のサイズ N を指定します（デフォルト3）。
 - **ルール**:
   - `.` で始まる隠しディレクトリ以外のすべてのサブディレクトリから `logic.py` または `logic.js` を探します。
-  - `original` 以外のディレクトリで `AGENT_NAME` が `"original"` のままの場合、そのエージェントは失格となります。
+  - `original_py` または `original_js` 以外のディレクトリで `AGENT_NAME` が `"original_py"` または `"original_js"` のままの場合、そのエージェントは失格となります。
+  - **盤面サイズの上限**: 思考アルゴリズムの計算量によりますが、トーナメントをスムーズに進行させるため、5x5 程度までを推奨します。巨大な盤面で探索が深すぎるとタイムアウトの原因となります。
   - エージェントが実行中に例外を投げた場合、その試合は負けとなります（双方が投げた場合は引き分け）。
   - **順位付け (エージェントが3つ以上の場合)**:
     - 各ペアの対戦結果（統計的有意差に基づく判定）から、以下の順位点を付与します。

@@ -12,7 +12,7 @@ from unittest.mock import patch, MagicMock
 ])
 def test_check_winner_budokai(board, expected):
     # 総当たり戦ツール内での勝利判定が正しいかテスト
-    assert check_winner(board) == expected
+    assert check_winner(board, 3) == expected
 
 def test_run_match_normal():
     class DummyAgent:
@@ -24,7 +24,7 @@ def test_run_match_normal():
     a1 = DummyAgent("O")
     a2 = DummyAgent("X")
     # これは予測可能なシーケンスにつながる
-    res = run_match(a1, a2, "normal")
+    res = run_match(a1, a2, "normal", 3)
     assert res in ["O", "X", "Draw"]
 
 def test_run_match_exception():
@@ -41,11 +41,11 @@ def test_run_match_exception():
     # ErrorAgent (O) は即座に失敗する
     # run_match は NormalAgent (X) も同じ盤面で失敗するかどうかを確認する
     # NormalAgent は失敗しないため、X の勝利となる
-    res = run_match(ErrorAgent("O"), NormalAgent("X"), "normal")
+    res = run_match(ErrorAgent("O"), NormalAgent("X"), "normal", 3)
     assert res == "X"
 
     # 両方が失敗
-    res = run_match(ErrorAgent("O"), ErrorAgent("X"), "normal")
+    res = run_match(ErrorAgent("O"), ErrorAgent("X"), "normal", 3)
     assert res == "Draw"
 
 def test_get_agent_class_budokai(tmp_path):
@@ -101,7 +101,7 @@ def test_main_disqualification(tmp_path, monkeypatch):
     imposter_dir = tmp_path / "imposter"
     imposter_dir.mkdir()
     (imposter_dir / "logic.py").write_text("""
-AGENT_NAME = "original"
+AGENT_NAME = "original_py"
 class GameAgent:
     def __init__(self, mark): pass
     def get_name(self): return AGENT_NAME
@@ -138,7 +138,7 @@ def test_main_tournament_3_agents_ranking(tmp_path, monkeypatch):
     # A vs B: A win (O if A is O, X if A is X)
     # A vs C: A win
     # B vs C: Draw
-    def mock_run_match(ao, ax, strategy):
+    def mock_run_match(ao, ax, strategy, size):
         name_o = ao.get_name()
         name_x = ax.get_name()
 
@@ -181,7 +181,7 @@ def test_main_tournament_3_agents_top_tie(tmp_path, monkeypatch):
     # A vs B: Draw
     # Points: A=4, B=4, C=0
     # Expected Ranks: A=1, B=1, C=3
-    def mock_run_match(ao, ax, strategy):
+    def mock_run_match(ao, ax, strategy, size):
         name_o = ao.get_name()
         name_x = ax.get_name()
 

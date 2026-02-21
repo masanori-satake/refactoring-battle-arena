@@ -38,4 +38,4 @@
 | 正常系 | `test_get_agent_class_budokai` | 動的なモジュールロードの確認 | logic.py または logic.js から GameAgent がロードされる |
 | 境界値 | `test_get_agent_class_not_found_budokai` | ロジックファイルが存在しないディレクトリを指定 | `None` が返される |
 | 正常系 | `test_main_tournament` | 複数エージェントによるトーナメント全体の実行 | 各エージェントの名前が結果表に含まれる |
-| 異常系 | `test_main_disqualification` | original以外のディレクトリで名前をoriginalにしているエージェント | 失格メッセージが表示される |
+| 異常系 | `test_main_disqualification` | original_py/original_js以外のディレクトリで名前をoriginal_py/original_jsにしているエージェント | 失格メッセージが表示される |
