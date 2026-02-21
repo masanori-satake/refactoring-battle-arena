@@ -4,6 +4,8 @@ import random
 V1 = "O"
 V2 = "X"
 
+# 重要: AGENT_NAMEは、参加者自身のユニークな名前に必ず書き換えてください。
+# "original" のままでは、天下一武道会（budokai.py）に参加できません。
 AGENT_NAME = "original"
 
 class GameAgent:
@@ -13,6 +15,7 @@ class GameAgent:
         self.peer_identity_hash = V2 if mark == V1 else V1
         self.connection_retry_limit = 3
 
+    # 注意: get_name および get_action のインターフェース（メソッド名、引数、戻り値の型）は変更不可です。
     def get_name(self):
         """
         エージェントの名前を返します。
