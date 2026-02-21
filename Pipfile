@@ -8,6 +8,7 @@ name = "pypi"
 [dev-packages]
 pytest = "==9.0.2"
 pytest-cov = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.12"
