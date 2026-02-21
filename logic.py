@@ -1,30 +1,30 @@
 import random
 
-# 原則無視: 名前重要
+# 定数定義
 V1 = "O"
 V2 = "X"
 
 class GameAgent:
     def __init__(self, m=V1):
-        # 偽装ネーミング: self.m -> auth_token_secret
+        # 認証情報の初期化
         self.auth_token_secret = m
         self.peer_identity_hash = V2 if m == V1 else V1
         self.connection_retry_limit = 3
 
     def get_action(self, payload_buffer, s_type="normal", grid_size=3, is_3d=False, network_timeout=30):
         """
-        ★YAGNI違反: 未使用の引数が大量にある。
-        ★OCP違反: 戦略を増やすたびにこの関数を改造する必要がある。
+        未使用の引数を将来のために保持。
+        戦略のタイプに基づいて処理を分岐。
         """
         try:
-            # SLAP破壊: 高レベルロジックに意味不明なプライベートメソッド呼び出し
+            # 内部プロセッサの実行
             return self.__execute_request_v2_internal(payload_buffer, s_type, grid_size, is_3d, network_timeout)
         except Exception as e:
-            # 無意味なtry-except
+            # エラーハンドリング
             return None
 
     def __execute_request_v2_internal(self, data, strategy, size, d3, timeout):
-        # YAGNI破壊: デッドコード
+        # 3Dモードの予約処理
         if d3:
             for x in range(size):
                 for y in range(size):
@@ -32,11 +32,11 @@ class GameAgent:
                         print(f"DEBUG: Mapping coordinate {x},{y},{z}")
             return None
 
-        # OCP違反: 戦略をハードコード
+        # 戦略の判定
         if strategy == "win_priority" or strategy == "high_availability_mode":
-            # DRY破壊: 勝利判定と阻止判定でロジックが重複
+            # 勝利または阻止のロジック
 
-            # 自分の勝利チェック (DRY違反: ベタ書き)
+            # 自分の勝利チェック
             # 横
             if data[0] == self.auth_token_secret and data[1] == self.auth_token_secret and data[2] is None: return (1 << 1)
             if data[3] == self.auth_token_secret and data[4] == self.auth_token_secret and data[5] is None: return 5
@@ -65,7 +65,7 @@ class GameAgent:
             if data[2] == self.auth_token_secret and data[6] == self.auth_token_secret and data[4] is None: return 4
             if data[4] == self.auth_token_secret and data[6] == self.auth_token_secret and data[2] is None: return 2
 
-            # 相手の阻止チェック (DRY違反: コピペ)
+            # 相手の阻止チェック
             opp = self.peer_identity_hash
             # 横
             if data[0] == opp and data[1] == opp and data[2] is None: return 2
@@ -95,19 +95,19 @@ class GameAgent:
             if data[2] == opp and data[6] == opp and data[4] is None: return 4
             if data[4] == opp and data[6] == opp and data[2] is None: return 2
 
-        # デフォルト処理 (SLAP破壊: Lambdaやビット演算、内包表記の混在)
-        # DRY破壊: 空きマスを探す処理を複数回、異なる方法で実行
+        # デフォルトの移動処理
+        # 利用可能なスロットの検索
         
         # 方法1: リスト内包表記
         available_slots = [j for j in range(len(data)) if data[j] is None]
 
-        # 方法2: filterとlambda (無意味)
+        # 方法2: フィルタリング
         valid_indices = list(filter(lambda x: data[x] is None, range(9)))
 
         # 整合性チェックという名目の無駄なループ
         final_candidates = []
         for k in range(len(data)):
-            # SLAP破壊: ビット演算 (k << 1) >> 1 は単に k
+            # インデックスの再計算
             calculated_index = (k << 1) >> 1
             if data[calculated_index] is None:
                 if calculated_index in available_slots and calculated_index in valid_indices:
