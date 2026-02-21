@@ -13,7 +13,7 @@ class JsGameAgent:
         self._start_process()
 
     def _start_process(self):
-        # Small helper script to bridge Python and JS
+        # PythonとJSを橋渡しするための小さなヘルパースクリプト
         bridge_code = f"""
 const {{ GameAgent }} = require('{self.js_path}');
 const readline = require('readline');
@@ -27,7 +27,7 @@ rl.on('line', (line) => {{
             agent = new GameAgent(req.mark);
             console.log(JSON.stringify({{ status: 'ok' }}));
         }} else if (req.method === 'get_name') {{
-            // AGENT_NAME might be a constant or returned by get_name()
+            // AGENT_NAMEは定数であるか、get_name()によって返される可能性があります
             const name = agent.get_name();
             console.log(JSON.stringify({{ result: name }}));
         }} else if (req.method === 'get_action') {{
@@ -47,18 +47,18 @@ rl.on('line', (line) => {{
             stderr=subprocess.PIPE,
             text=True
         )
-        # Initialize the agent
+        # エージェントを初期化
         self._send({"method": "init", "mark": self.mark})
 
     def _send(self, data):
         if not self.process or self.process.poll() is not None:
-            raise RuntimeError("JS process is not running")
+            raise RuntimeError("JSプロセスが実行されていません")
         self.process.stdin.write(json.dumps(data) + "\n")
         self.process.stdin.flush()
         line = self.process.stdout.readline()
         if not line:
             err = self.process.stderr.read()
-            raise RuntimeError(f"JS process terminated unexpectedly: {err}")
+            raise RuntimeError(f"JSプロセスが予期せず終了しました: {err}")
         return json.loads(line)
 
     def get_name(self):
@@ -87,7 +87,7 @@ def get_agent_class(directory):
         spec.loader.exec_module(module)
         return module.GameAgent
     elif os.path.exists(logic_js):
-        # Return a class that, when instantiated, returns a JsGameAgent
+        # インスタンス化されたときにJsGameAgentを返すクラス（ラムダ）を返す
         return lambda mark: JsGameAgent(directory, mark)
     else:
         return None

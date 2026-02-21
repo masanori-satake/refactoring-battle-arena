@@ -94,12 +94,12 @@ def play_game(agent_class):
             break
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Tic-Tac-Toe Human vs AI')
-    parser.add_argument('--dir', type=str, default='original', help='Directory containing logic.py')
+    parser = argparse.ArgumentParser(description='三目並べ: 人間 vs AI')
+    parser.add_argument('--dir', type=str, default='original', help='エージェントのロジックが含まれるディレクトリ')
     args = parser.parse_args()
 
     AgentClass = get_agent_class(args.dir)
     if not AgentClass:
-        print(f"Error: No agent found in {args.dir}")
+        print(f"エラー: {args.dir} にエージェントが見つかりませんでした")
         sys.exit(1)
     play_game(AgentClass)

@@ -13,48 +13,30 @@ def load_game_agent():
 
 GameAgent = load_game_agent()
 
-@pytest.fixture
-def agent():
-    return GameAgent(mark="O")
-
-def test_win_immediate(agent):
-    # 特定のパターンで期待されるマスを選択する（オリジナル戦略）
-    board = ["O", "O", None, "X", None, "X", None, None, None]
-    assert agent.get_action(board, strategy_type="original") == 2
-
-def test_block_opponent(agent):
-    # 特定のパターンで期待されるマスを選択する（オリジナル戦略）
-    board = ["X", "X", None, "O", None, None, None, None, None]
-    assert agent.get_action(board, strategy_type="original") == 2
-
-def test_no_empty_space(agent):
+@pytest.mark.parametrize("board, expected, strategy, mark", [
+    # 自分の勝利チェック
+    (["O", "O", None, "X", None, "X", None, None, None], 2, "original", "O"),
+    # 相手の阻止チェック
+    (["X", "X", None, "O", None, None, None, None, None], 2, "original", "O"),
     # 空きマスがない場合はNoneを返す
-    board = ["O", "X", "O", "O", "X", "O", "X", "O", "X"]
-    assert agent.get_action(board) is None
+    (["O", "X", "O", "O", "X", "O", "X", "O", "X"], None, "normal", "O"),
+    # 斜めの勝利チェック
+    (["O", None, "X", None, "O", "X", None, None, None], 8, "original", "O"),
+    # 斜めの阻止チェック
+    (["X", None, None, None, "X", None, None, None, None], 8, "original", "O"),
+    # エージェントがマークXの場合の阻止チェック
+    (["O", "O", None, None, None, None, None, None, None], 2, "original", "X"),
+    # すでに埋まっている場所は選ばない
+    (["O", "X", "O", "O", "X", "O", "X", "O", None], 8, "normal", "O"),
+])
+def test_action_scenarios(board, expected, strategy, mark):
+    # 特定のパターンで期待されるマスを選択するかテスト
+    agent = GameAgent(mark=mark)
+    assert agent.get_action(board, strategy_type=strategy) == expected
 
-def test_basic_move(agent):
+def test_basic_move():
     # 最低限、空いている場所のいずれかを選択する
+    agent = GameAgent(mark="O")
     board = [None] * 9
     move = agent.get_action(board)
     assert 0 <= move <= 8
-
-def test_win_diagonal(agent):
-    # 特定のパターンで期待されるマスを選択する（オリジナル戦略）
-    board = ["O", None, "X", None, "O", "X", None, None, None]
-    assert agent.get_action(board, strategy_type="original") == 8
-
-def test_block_diagonal(agent):
-    # 特定のパターンで期待されるマスを選択する（オリジナル戦略）
-    board = ["X", None, None, None, "X", None, None, None, None]
-    assert agent.get_action(board, strategy_type="original") == 8
-
-def test_agent_as_x():
-    # エージェントがマークXの場合
-    agent_x = GameAgent(mark="X")
-    board = ["O", "O", None, None, None, None, None, None, None]
-    assert agent_x.get_action(board, strategy_type="original") == 2
-
-def test_valid_move_only(agent):
-    # 既に埋まっている場所は選ばない
-    board = ["O", "X", "O", "O", "X", "O", "X", "O", None]
-    assert agent.get_action(board) == 8
