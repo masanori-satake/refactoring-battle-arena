@@ -48,8 +48,12 @@ def run_match(agent_o, agent_x, strategy_type):
             if move is None or not (0 <= move <= 8) or board[move] is not None:
                 raise ValueError("Invalid move")
             board[move] = mark
-        except Exception:
+        except Exception as e:
             # 現在のエージェントが失敗しました。もう一方のエージェントも同じ盤面で失敗するか確認します。
+            # エラー内容を表示（特にJSプロセスの異常終了などを検知するため）
+            if not isinstance(e, ValueError):
+                print(f"警告: エージェント {turn} で予期せぬエラーが発生しました: {e}", file=sys.stderr)
+
             other_agent = agent_x if turn == 'O' else agent_o
             try:
                 other_move = other_agent.get_action(board[:], strategy_type=strategy_type)
