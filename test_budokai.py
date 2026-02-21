@@ -112,3 +112,94 @@ class GameAgent:
         main()
         all_output = "".join(str(call) for call in mock_p.call_args_list)
         assert "失格 imposter" in all_output
+
+def create_mock_agent_dir(path, name):
+    d = path / name
+    d.mkdir()
+    (d / "logic.py").write_text(f"""
+AGENT_NAME = "{name}"
+class GameAgent:
+    def __init__(self, mark): self.mark = mark
+    def get_name(self): return AGENT_NAME
+    def get_action(self, board, strategy_type="normal"): return 0
+""")
+    return d
+
+@patch('sys.argv', ['budokai.py', '--count', '10'])
+def test_main_tournament_3_agents_ranking(tmp_path, monkeypatch):
+    # 3つのエージェントを作成: A, B, C
+    create_mock_agent_dir(tmp_path, "agentA")
+    create_mock_agent_dir(tmp_path, "agentB")
+    create_mock_agent_dir(tmp_path, "agentC")
+
+    monkeypatch.chdir(tmp_path)
+
+    # run_matchをモックして、AがBとCに勝ち、BとCが引き分けるようにする
+    # A vs B: A win (O if A is O, X if A is X)
+    # A vs C: A win
+    # B vs C: Draw
+    def mock_run_match(ao, ax, strategy):
+        name_o = ao.get_name()
+        name_x = ax.get_name()
+
+        if (name_o == "agentA" and name_x == "agentB"): return 'O'
+        if (name_o == "agentB" and name_x == "agentA"): return 'X'
+        if (name_o == "agentA" and name_x == "agentC"): return 'O'
+        if (name_o == "agentC" and name_x == "agentA"): return 'X'
+        return 'Draw'
+
+    with patch('budokai.run_match', side_effect=mock_run_match):
+        with patch('builtins.print') as mock_p:
+            main()
+            all_output = "".join(str(call) for call in mock_p.call_args_list)
+
+            # 期待値: A=6pts (1位), B=1pt (3位), C=1pt (3位)
+            # 順位表示があることを確認
+            assert "Rank" in all_output
+            assert "Pts" in all_output
+
+            # agentA (1位)
+            assert "1     | agentA" in all_output or "1" in all_output and "agentA" in all_output
+            # agentB, agentC (3位)
+            assert "3     | agentB" in all_output or "3" in all_output and "agentB" in all_output
+            assert "3     | agentC" in all_output or "3" in all_output and "agentC" in all_output
+            # 2位はいないはず
+            assert "2     |" not in all_output
+
+@patch('sys.argv', ['budokai.py', '--count', '10'])
+def test_main_tournament_3_agents_top_tie(tmp_path, monkeypatch):
+    # 3つのエージェントを作成: A, B, C
+    create_mock_agent_dir(tmp_path, "agentA")
+    create_mock_agent_dir(tmp_path, "agentB")
+    create_mock_agent_dir(tmp_path, "agentC")
+
+    monkeypatch.chdir(tmp_path)
+
+    # AとBがCに勝ち、AとBが引き分ける
+    # A vs C: A win
+    # B vs C: B win
+    # A vs B: Draw
+    # Points: A=4, B=4, C=0
+    # Expected Ranks: A=1, B=1, C=3
+    def mock_run_match(ao, ax, strategy):
+        name_o = ao.get_name()
+        name_x = ax.get_name()
+
+        if (name_o == "agentA" and name_x == "agentC"): return 'O'
+        if (name_o == "agentC" and name_x == "agentA"): return 'X'
+        if (name_o == "agentB" and name_x == "agentC"): return 'O'
+        if (name_o == "agentC" and name_x == "agentB"): return 'X'
+        return 'Draw'
+
+    with patch('budokai.run_match', side_effect=mock_run_match):
+        with patch('builtins.print') as mock_p:
+            main()
+            all_output = "".join(str(call) for call in mock_p.call_args_list)
+
+            # agentA, agentB (1位)
+            assert "1     | agentA" in all_output
+            assert "1     | agentB" in all_output
+            # agentC (3位)
+            assert "3     | agentC" in all_output
+            # 2位はいない
+            assert "2     |" not in all_output

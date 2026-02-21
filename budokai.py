@@ -176,22 +176,50 @@ def main():
                 match_results[dir1]['draw'] += 1
                 match_results[dir2]['draw'] += 1
 
+    # ポイント計算
+    agent_points = {}
+    for d in dirs:
+        agent_points[d] = match_results[d]['win'] * 3 + match_results[d]['draw'] * 1
+
+    # 順位計算 (3つ以上のエージェントがいる場合のみ)
+    is_tournament = len(dirs) >= 3
+    ranks = {}
+    if is_tournament:
+        max_p = max(agent_points.values()) if agent_points else 0
+        for d in dirs:
+            if agent_points[d] == max_p:
+                ranks[d] = 1
+            else:
+                # 自分以上のポイントを持つチームの総数 (同着の場合はそのグループの最下位順位)
+                ranks[d] = sum(1 for other_d in dirs if agent_points[other_d] >= agent_points[d])
+
     # 結果テーブル出力
     print(f"\nトーナメント結果 (戦略: {args.strategy})")
     print("※勝敗は統計的有意差（p < 0.05, 二項検定近似）に基づいて判定されています。")
-    header = f"{'Agent (Dir)':<30} | {'Match Win':<10} | {'Match Loss':<10} | {'Match Draw':<10}"
+
+    if is_tournament:
+        print("※順位点: 勝利 3点 / 引き分け 1点 / 敗北 0点")
+        header = f"{'Rank':<5} | {'Agent (Dir)':<30} | {'Pts':<5} | {'Match Win':<10} | {'Match Loss':<10} | {'Match Draw':<10}"
+    else:
+        header = f"{'Agent (Dir)':<30} | {'Match Win':<10} | {'Match Loss':<10} | {'Match Draw':<10}"
+
     print(header)
     print("-" * len(header))
 
-    # エージェントをマッチ勝利数でソート（同数の場合は引き分け数でソート）
-    sorted_dirs = sorted(dirs, key=lambda d: (match_results[d]['win'], match_results[d]['draw']), reverse=True)
+    # エージェントをポイントでソート（同点の場合は勝利数、さらに同じならディレクトリ名で安定化）
+    sorted_dirs = sorted(dirs, key=lambda d: (agent_points[d], match_results[d]['win'], d), reverse=True)
 
     for d in sorted_dirs:
         name = agent_names[d]
         mw = match_results[d]['win']
         ml = match_results[d]['loss']
         md = match_results[d]['draw']
-        print(f"{f'{name} ({d})':<30} | {mw:<10} | {ml:<10} | {md:<10}")
+        pts = agent_points[d]
+        if is_tournament:
+            rank = ranks[d]
+            print(f"{rank:<5} | {f'{name} ({d})':<30} | {pts:<5} | {mw:<10} | {ml:<10} | {md:<10}")
+        else:
+            print(f"{f'{name} ({d})':<30} | {mw:<10} | {ml:<10} | {md:<10}")
 
 if __name__ == "__main__":
     main()
