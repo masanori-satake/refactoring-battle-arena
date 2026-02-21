@@ -11,13 +11,13 @@ class GameAgent:
         self.peer_identity_hash = V2 if mark == V1 else V1
         self.connection_retry_limit = 3
 
-    def get_action(self, payload_buffer, s_type="normal"):
+    def get_action(self, payload_buffer, strategy_type="normal"):
         """
         戦略のタイプに基づいて処理を分岐。
         """
         try:
             # 内部プロセッサの実行
-            return self.__execute_request_v2_internal(payload_buffer, s_type)
+            return self.__execute_request_v2_internal(payload_buffer, strategy_type)
         except Exception as e:
             # エラーハンドリング
             return None

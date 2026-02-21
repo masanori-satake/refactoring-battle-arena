@@ -31,7 +31,7 @@ def play_game():
         print("1: デフォルト (ランダム)")
         print("2: 勝利優先 (リーチがあれば取る/防ぐ)")
         strat_choice = input("選択 (1 or 2): ")
-        s_type = "win_priority" if strat_choice == "2" else "normal"
+        strategy_type = "win_priority" if strat_choice == "2" else "normal"
 
         print("\n先攻・後攻を選択してください:")
         print("1: 人間 (O)")
@@ -77,7 +77,7 @@ def play_game():
             else:
                 print(f"AIの番 ({ai_mark})...")
                 # 選択された戦略を使用
-                move = agent.get_action(board, s_type=s_type)
+                move = agent.get_action(board, strategy_type=strategy_type)
                 if move is not None and board[move] is None:
                     board[move] = ai_mark
                     print(f"AIは {move} を選択しました。")
