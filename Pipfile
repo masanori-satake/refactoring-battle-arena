@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = True
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+pytest = "==9.0.2"
+pytest-cov = "*"
+
+[requires]
+python_version = "3.12"
