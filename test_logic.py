@@ -4,7 +4,7 @@ import sys
 from loader import get_agent_class
 
 def load_game_agent():
-    directory = os.environ.get('AGENT_DIR', 'original')
+    directory = os.environ.get('AGENT_DIR', 'original_py')
     agent_class = get_agent_class(directory)
     if not agent_class:
         print(f"Error: No agent found in {directory}")

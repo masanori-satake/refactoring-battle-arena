@@ -22,14 +22,14 @@ from loader import get_agent_class
 ])
 def test_check_winner(board, expected):
     # 盤面の勝利判定（横・縦・斜め・引き分け・継続中）が正しいかテスト
-    assert check_winner(board) == expected
+    assert check_winner(board, 3) == expected
 
 def test_get_agent_class():
-    # 'original' からのロードをテスト
-    AgentClass = get_agent_class("original")
+    # 'original_py' からのロードをテスト
+    AgentClass = get_agent_class("original_py")
     assert AgentClass is not None
     agent = AgentClass(mark="O")
-    assert agent.get_name() == "original"
+    assert agent.get_name() == "original_py"
 
 def test_get_agent_class_not_found():
     assert get_agent_class("non_existent_dir") is None
@@ -55,7 +55,7 @@ def test_play_game_basic(mock_print, mock_input, mock_check):
             return None
 
     # play_game は agent_class を引数として受け取るため
-    play_game(MockAgent)
+    play_game(MockAgent, 3)
 
     # 終了するために 'n' が呼ばれたことを確認
     assert mock_input.call_count == 4
@@ -75,5 +75,5 @@ def test_play_game_ai_first(mock_print, mock_input, mock_check):
         def get_action(self, board, strategy_type="normal"):
             return 0 # AIは常に0を選択
 
-    play_game(MockAgent)
+    play_game(MockAgent, 3)
     assert mock_input.call_count == 4

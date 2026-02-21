@@ -5,8 +5,8 @@ V1 = "O"
 V2 = "X"
 
 # 重要: AGENT_NAMEは、参加者自身のユニークな名前に必ず書き換えてください。
-# "original" のままでは、天下一武道会（budokai.py）に参加できません。
-AGENT_NAME = "original"
+# "original_py" のままでは、天下一武道会（budokai.py）に参加できません。
+AGENT_NAME = "original_py"
 
 class GameAgent:
     def __init__(self, mark=V1):
@@ -112,7 +112,7 @@ class GameAgent:
         available_slots = [j for j in range(len(data)) if data[j] is None]
 
         # 方法2: フィルタリング
-        valid_indices = list(filter(lambda x: data[x] is None, range(9)))
+        valid_indices = list(filter(lambda x: data[x] is None, range(len(data))))
 
         # 整合性チェックという名目の無駄なループ
         final_candidates = []

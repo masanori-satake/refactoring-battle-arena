@@ -10,33 +10,48 @@ if hasattr(sys.stderr, 'reconfigure'):
 from collections import defaultdict
 from loader import get_agent_class
 
-def check_winner(board):
-    lines = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], # 横
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], # 縦
-        [0, 4, 8], [2, 4, 6]             # 斜め
-    ]
-    for line in lines:
-        if board[line[0]] == board[line[1]] == board[line[2]] and board[line[0]] is not None:
-            return board[line[0]]
+def check_winner(board, size):
+    win_req = 3 if size <= 3 else 4 if size == 4 else 5
+
+    # 横
+    for r in range(size):
+        for c in range(size - win_req + 1):
+            window = [board[r * size + c + i] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+    # 縦
+    for c in range(size):
+        for r in range(size - win_req + 1):
+            window = [board[(r + i) * size + c] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+    # 斜め
+    for r in range(size - win_req + 1):
+        for c in range(size - win_req + 1):
+            # 右下
+            window = [board[(r + i) * size + (c + i)] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+            # 左下
+            window = [board[(r + i) * size + (c + win_req - 1 - i)] for i in range(win_req)]
+            if window[0] is not None and all(x == window[0] for x in window):
+                return window[0]
+
     if all(cell is not None for cell in board):
         return "Draw"
     return None
 
-def run_match(agent_o, agent_x, strategy_type):
+def run_match(agent_o, agent_x, strategy_type, size):
     """
     agent_oが勝てば'O'を、agent_xが勝てば'X'を、引き分けなら'Draw'を返します。
     エージェントが例外を投げた場合は負けとなります。
     両方が投げた場合は引き分けとなります。
     """
-    board = [None] * 9
-
-    # すでにエラーが発生したかどうかを追跡する必要があります
-    # しかし、ターン制では、最初にエラーを出した方が即座に負けます。
+    board = [None] * (size * size)
 
     turn = 'O'
-    for _ in range(10): # 最大9手 + 1つの安全策
-        winner = check_winner(board)
+    for _ in range(size * size + 1):
+        winner = check_winner(board, size)
         if winner:
             return winner
 
@@ -45,7 +60,7 @@ def run_match(agent_o, agent_x, strategy_type):
 
         try:
             move = current_agent.get_action(board[:], strategy_type=strategy_type)
-            if move is None or not (0 <= move <= 8) or board[move] is not None:
+            if move is None or not (0 <= move < size * size) or board[move] is not None:
                 raise ValueError("Invalid move")
             board[move] = mark
         except Exception as e:
@@ -57,7 +72,7 @@ def run_match(agent_o, agent_x, strategy_type):
             other_agent = agent_x if turn == 'O' else agent_o
             try:
                 other_move = other_agent.get_action(board[:], strategy_type=strategy_type)
-                if other_move is None or not (0 <= other_move <= 8) or board[other_move] is not None:
+                if other_move is None or not (0 <= other_move < size * size) or board[other_move] is not None:
                     return 'Draw' # 両方が失敗
                 return 'X' if turn == 'O' else 'O' # 現在のエージェントのみが失敗
             except Exception:
@@ -71,6 +86,7 @@ def main():
     parser = argparse.ArgumentParser(description='天下一武道会: 三目並べトーナメント')
     parser.add_argument('--strategy', type=str, default='normal', help='使用する戦略タイプ (normal/original)')
     parser.add_argument('--count', type=int, default=50, help='各ターン（先攻/後攻）でプレイするゲーム数')
+    parser.add_argument('--size', type=int, default=3, help='盤面のサイズ (N x N)')
     args = parser.parse_args()
 
     # 全エージェントを検索
@@ -87,9 +103,9 @@ def main():
                 agent_instance = AgentClass(mark='O')
                 name = agent_instance.get_name()
 
-                # バリデーション: originalディレクトリ以外で 'original' という名前を名乗っている場合
-                if name == 'original' and dir_name != 'original':
-                    print(f"失格 {dir_name}: originalディレクトリ以外で 'original' という名前を使用しています。")
+                # バリデーション: original_py/original_jsディレクトリ以外で 'original_py/original_js' という名前を名乗っている場合
+                if (name == 'original_py' and dir_name != 'original_py') or (name == 'original_js' and dir_name != 'original_js'):
+                    print(f"失格 {dir_name}: original_py/original_jsディレクトリ以外で '{name}' という名前を使用しています。")
                     continue
 
                 agents_info.append({
@@ -127,7 +143,7 @@ def main():
             for _ in range(args.count):
                 a1 = AgentClass1(mark='O')
                 a2 = AgentClass2(mark='X')
-                res = run_match(a1, a2, args.strategy)
+                res = run_match(a1, a2, args.strategy, args.size)
                 if res == 'O':
                     results[dir1][dir2]['win'] += 1
                     results[dir2][dir1]['loss'] += 1
@@ -142,7 +158,7 @@ def main():
             for _ in range(args.count):
                 a1 = AgentClass1(mark='X')
                 a2 = AgentClass2(mark='O')
-                res = run_match(a2, a1, args.strategy)
+                res = run_match(a2, a1, args.strategy, args.size)
                 if res == 'O': # a2 が勝利
                     results[dir2][dir1]['win'] += 1
                     results[dir1][dir2]['loss'] += 1
