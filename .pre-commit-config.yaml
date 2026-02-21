@@ -13,5 +13,5 @@ repos:
           - --strategy
           - normal
           - --count
-          - "10"
+          - "50"
         verbose: true
