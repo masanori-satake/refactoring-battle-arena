@@ -1,0 +1,17 @@
+repos:
+  - repo: local
+    hooks:
+      - id: budokai
+        name: 天下一武道会 (Tournament)
+        description: "Node.jsのセットアップとbudokai.pyの実行を自動化します。"
+        entry: python3 budokai.py
+        language: node
+        language_version: lts
+        pass_filenames: false
+        stages: [manual]
+        args:
+          - --strategy
+          - normal
+          - --count
+          - "10"
+        verbose: true

@@ -130,3 +130,17 @@ python3 budokai.py --strategy original --count 10
   - `.` で始まる隠しディレクトリ以外のすべてのサブディレクトリから `logic.py` または `logic.js` を探します。
   - `original` 以外のディレクトリで `AGENT_NAME` が `"original"` のままの場合、そのエージェントは失格となります。
   - エージェントが実行中に例外を投げた場合、その試合は負けとなります（双方が投げた場合は引き分け）。
+
+### pre-commit を利用した実行
+Node.js のインストールや環境構築を自動化したい場合は、`pre-commit` を利用することができます。
+この方法は、普段 Python のみを開発しており Node.js を別途インストールするのが手間な場合に便利です。
+
+```bash
+pre-commit run budokai --all-files --hook-stage manual
+```
+
+このコマンドを実行すると、以下の処理が自動で行われます：
+1. 必要なバージョンの Node.js のダウンロードとセットアップ（初回のみ）
+2. 指定された引数（デフォルト: `--strategy normal --count 10`）での `budokai.py` の実行
+
+引数を変更したい場合は、`.pre-commit-config.yaml` 内の `args` を編集するか、直接 `python3 budokai.py` を実行してください。
