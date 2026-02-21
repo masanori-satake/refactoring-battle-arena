@@ -4,7 +4,7 @@ repos:
       - id: budokai
         name: 天下一武道会 (Tournament)
         description: "Node.jsのセットアップとbudokai.pyの実行を自動化します。"
-        entry: python3 budokai.py
+        entry: python3 -X utf8 budokai.py
         language: node
         language_version: lts
         pass_filenames: false
