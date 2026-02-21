@@ -14,8 +14,10 @@ class JsGameAgent:
 
     def _start_process(self):
         # PythonとJSを橋渡しするための小さなヘルパースクリプト
+        # Windowsのパス（バックスラッシュ）がJSの文字列内で正しくエスケープされるようにjson.dumpsを使用
+        js_path_escaped = json.dumps(self.js_path)
         bridge_code = f"""
-const {{ GameAgent }} = require('{self.js_path}');
+const {{ GameAgent }} = require({js_path_escaped});
 const readline = require('readline');
 const rl = readline.createInterface({{ input: process.stdin, output: process.stdout, terminal: false }});
 let agent;
