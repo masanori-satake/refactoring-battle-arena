@@ -3,7 +3,7 @@
 本プロジェクトにおける各テストファイルの仕様を以下に記載します。
 
 ## 1. test_logic.py
-エージェント（GameAgent）の着手ロジックに関するテストです。
+エージェント（GameAgent）の着手ロジックに関するテストです。Python (`logic.py`) と JavaScript (`logic.js`) の両方のエージェントをテスト可能です。
 
 | テストのカテゴリ | テスト関数名 | テストケース概要 | 期待する結果 |
 | :--- | :--- | :--- | :--- |
@@ -22,8 +22,8 @@
 | テストのカテゴリ | テスト関数名 | テストケース概要 | 期待する結果 |
 | :--- | :--- | :--- | :--- |
 | 正常系 | `test_check_winner` | 盤面の勝利判定（横・縦・斜め・引き分け・継続中） | 正しい結果（O, X, Draw, None）が返される |
-| 正常系 | `test_load_game_agent` | 指定したディレクトリからエージェントをロードする | `GameAgent`クラスが正しくロードされる |
-| 異常系 | `test_load_game_agent_not_found` | 存在しないディレクトリを指定してロードを試みる | `SystemExit` が発生する |
+| 正常系 | `test_get_agent_class` | 指定したディレクトリからエージェントをロードする | `GameAgent`相当のクラスが正しくロードされる |
+| 異常系 | `test_get_agent_class_not_found` | 存在しないディレクトリを指定してロードを試みる | `None` が返される |
 | 正常系 | `test_play_game_basic` | 対戦メインループ（人間が先攻、1手で勝利） | エラーなく終了し、リトライ確認まで到達する |
 | 正常系 | `test_play_game_ai_first` | 対戦メインループ（AIが先攻） | AIの着手から始まり、正常にゲームが進行する |
 
@@ -35,7 +35,7 @@
 | 正常系 | `test_check_winner_budokai` | 総当たり戦ツール内での勝利判定 | 正しい結果が返される |
 | 正常系 | `test_run_match_normal` | 2つのエージェントによる1試合の実行 | 勝者または引き分けが返される |
 | 異常系 | `test_run_match_exception` | エージェントが例外を投げた場合の処理 | 例外を投げた側が負け（両方なら引き分け）となる |
-| 正常系 | `test_load_game_agent_budokai` | 動的なモジュールロードの確認 | logic.pyからGameAgentがロードされる |
-| 境界値 | `test_load_game_agent_not_found_budokai` | logic.pyが存在しないディレクトリを指定 | `None` が返される |
+| 正常系 | `test_get_agent_class_budokai` | 動的なモジュールロードの確認 | logic.py または logic.js から GameAgent がロードされる |
+| 境界値 | `test_get_agent_class_not_found_budokai` | ロジックファイルが存在しないディレクトリを指定 | `None` が返される |
 | 正常系 | `test_main_tournament` | 複数エージェントによるトーナメント全体の実行 | 各エージェントの名前が結果表に含まれる |
 | 異常系 | `test_main_disqualification` | original以外のディレクトリで名前をoriginalにしているエージェント | 失格メッセージが表示される |

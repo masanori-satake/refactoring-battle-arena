@@ -1,13 +1,18 @@
 import pytest
 import os
 import shutil
-from budokai import check_winner, run_match, load_game_agent, main
+from budokai import check_winner, run_match, main
+from loader import get_agent_class
 from unittest.mock import patch, MagicMock
 
-def test_check_winner_budokai():
-    assert check_winner(["O", "O", "O", None, None, None, None, None, None]) == "O"
-    assert check_winner(["O", "X", "O", "O", "X", "X", "X", "O", "X"]) == "Draw"
-    assert check_winner([None] * 9) is None
+@pytest.mark.parametrize("board, expected", [
+    (["O", "O", "O", None, None, None, None, None, None], "O"),
+    (["O", "X", "O", "O", "X", "X", "X", "O", "X"], "Draw"),
+    ([None] * 9, None),
+])
+def test_check_winner_budokai(board, expected):
+    # 総当たり戦ツール内での勝利判定が正しいかテスト
+    assert check_winner(board) == expected
 
 def test_run_match_normal():
     class DummyAgent:
@@ -18,7 +23,7 @@ def test_run_match_normal():
 
     a1 = DummyAgent("O")
     a2 = DummyAgent("X")
-    # This will lead to a predictable sequence
+    # これは予測可能なシーケンスにつながる
     res = run_match(a1, a2, "normal")
     assert res in ["O", "X", "Draw"]
 
@@ -33,32 +38,31 @@ def test_run_match_exception():
         def get_action(self, board, strategy_type="normal"):
             return 0
 
-    # ErrorAgent (O) fails immediately.
-    # run_match will check if NormalAgent (X) also fails on the same board.
-    # NormalAgent won't fail, so X wins.
+    # ErrorAgent (O) は即座に失敗する
+    # run_match は NormalAgent (X) も同じ盤面で失敗するかどうかを確認する
+    # NormalAgent は失敗しないため、X の勝利となる
     res = run_match(ErrorAgent("O"), NormalAgent("X"), "normal")
     assert res == "X"
 
-    # Both fail
+    # 両方が失敗
     res = run_match(ErrorAgent("O"), ErrorAgent("X"), "normal")
     assert res == "Draw"
 
-def test_load_game_agent_budokai(tmp_path):
+def test_get_agent_class_budokai(tmp_path):
     d = tmp_path / "test_agent"
     d.mkdir()
     (d / "logic.py").write_text("class GameAgent: pass")
 
-    module = load_game_agent(str(d))
-    assert module is not None
-    assert hasattr(module, "GameAgent")
+    agent_class = get_agent_class(str(d))
+    assert agent_class is not None
 
-def test_load_game_agent_not_found_budokai():
-    assert load_game_agent("non_existent_dir") is None
+def test_get_agent_class_not_found_budokai():
+    assert get_agent_class("non_existent_dir") is None
 
 @patch('sys.argv', ['budokai.py', '--count', '1'])
 @patch('builtins.print')
 def test_main_tournament(mock_print, tmp_path, monkeypatch):
-    # Create two agent directories
+    # 2つのエージェントディレクトリを作成
     agent1_dir = tmp_path / "agent1"
     agent1_dir.mkdir()
     (agent1_dir / "logic.py").write_text("""
@@ -81,13 +85,13 @@ class GameAgent:
         return board.index(None)
 """)
 
-    # Mock 'original' directory to exist or just run in tmp_path
+    # 'original' ディレクトリが存在するかのように振る舞うか、単に tmp_path で実行する
     monkeypatch.chdir(tmp_path)
 
     main()
 
-    # Verify print was called (results table)
-    # The exact output depends on match results, but it should contain agent names
+    # print が呼ばれたことを確認 (結果テーブル)
+    # 正確な出力は試合結果に依存するが、エージェント名が含まれている必要がある
     all_output = "".join(str(call) for call in mock_print.call_args_list)
     assert "agent1" in all_output
     assert "agent2" in all_output
@@ -107,4 +111,4 @@ class GameAgent:
     with patch('builtins.print') as mock_p:
         main()
         all_output = "".join(str(call) for call in mock_p.call_args_list)
-        assert "Disqualifying imposter" in all_output
+        assert "失格 imposter" in all_output
