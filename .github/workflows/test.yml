@@ -23,7 +23,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run tests (Default/Python)
-        run: pytest
-      - name: Run tests (JS Agent)
-        run: AGENT_DIR=original_js pytest test_logic.py
+      - name: Run tests (Python)
+        run: PYTHONPATH=. pytest
+      - name: Run tests (JS Agent via Python)
+        run: AGENT_DIR=original_js PYTHONPATH=. pytest tests/test_logic.py
+      - name: Run JS tests (Jest)
+        run: |
+          npm install
+          npm test
