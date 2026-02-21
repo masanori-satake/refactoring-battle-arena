@@ -25,3 +25,24 @@ def test_basic_move(agent):
     board = [None] * 9
     move = agent.get_action(board)
     assert 0 <= move <= 8
+
+def test_win_diagonal(agent):
+    # 斜めのリーチがあればそこを取る
+    board = ["O", None, "X", None, "O", "X", None, None, None]
+    assert agent.get_action(board, s_type="win_priority") == 8
+
+def test_block_diagonal(agent):
+    # 斜めの相手のリーチを阻止する
+    board = ["X", None, None, None, "X", None, None, None, None]
+    assert agent.get_action(board, s_type="win_priority") == 8
+
+def test_agent_as_x():
+    # エージェントが後攻（X）の場合
+    agent_x = GameAgent(m="X")
+    board = ["O", "O", None, None, None, None, None, None, None]
+    assert agent_x.get_action(board, s_type="win_priority") == 2
+
+def test_valid_move_only(agent):
+    # 既に埋まっている場所は選ばない
+    board = ["O", "X", "O", "O", "X", "O", "X", "O", None]
+    assert agent.get_action(board) == 8
