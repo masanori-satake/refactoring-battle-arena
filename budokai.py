@@ -1,6 +1,12 @@
 import os
 import sys
 import argparse
+
+# 標準出力をUTF-8に設定（Windows環境での文字化け対策）
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 from collections import defaultdict
 from loader import get_agent_class
 
