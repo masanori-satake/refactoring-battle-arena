@@ -47,7 +47,7 @@ def play_game():
             ai_mark = "X"
             turn = "Human"
 
-        agent = GameAgent(m=ai_mark)
+        agent = GameAgent(mark=ai_mark)
         board = [None] * 9
 
         while True:

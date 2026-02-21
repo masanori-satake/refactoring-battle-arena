@@ -5,10 +5,10 @@ V1 = "O"
 V2 = "X"
 
 class GameAgent:
-    def __init__(self, m=V1):
+    def __init__(self, mark=V1):
         # 認証情報の初期化
-        self.auth_token_secret = m
-        self.peer_identity_hash = V2 if m == V1 else V1
+        self.auth_token_secret = mark
+        self.peer_identity_hash = V2 if mark == V1 else V1
         self.connection_retry_limit = 3
 
     def get_action(self, payload_buffer, s_type="normal"):

@@ -3,7 +3,7 @@ from logic import GameAgent
 
 @pytest.fixture
 def agent():
-    return GameAgent(m="O")
+    return GameAgent(mark="O")
 
 def test_win_immediate(agent):
     # リーチがあればそこを取る（勝利優先）
@@ -38,7 +38,7 @@ def test_block_diagonal(agent):
 
 def test_agent_as_x():
     # エージェントが後攻（X）の場合
-    agent_x = GameAgent(m="X")
+    agent_x = GameAgent(mark="X")
     board = ["O", "O", None, None, None, None, None, None, None]
     assert agent_x.get_action(board, s_type="win_priority") == 2
 
