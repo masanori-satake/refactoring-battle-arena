@@ -7,28 +7,47 @@
 ## 🧪 テストの実行方法
 本プロジェクトでは `pytest` を使用して動作確認を行います。以下のコマンドでテストを実行できます。
 ```bash
+# デフォルト (originalディレクトリ) のテスト
 pytest test_logic.py
+
+# 特定のディレクトリのエージェントをテストする場合
+AGENT_DIR=participant1 pytest test_logic.py
 ```
 すべてのテストがパスすることを確認しながら進めてください。
 
 ### テストカバレッジの測定
 テストがコードのどの部分をカバーしているかを確認するには、以下のコマンドを実行します。
 ```bash
-pytest --cov=logic test_logic.py
+pytest --cov=original test_logic.py
 ```
 
 ## 🎮 対戦ツールの実行方法
 作成したエージェントと実際にターミナル上で対戦して動作を確認することができます。
 ```bash
+# デフォルト (originalディレクトリ) のエージェントと対戦
 python3 play.py
-# または
-python play.py
+
+# 特定のディレクトリのエージェントと対戦する場合
+python3 play.py --dir participant1
 ```
 - **機能**:
   - 人間 vs AI の対戦（3x3 三目並べ）
   - 先攻・後攻の選択
   - 勝敗・引き分けの判定
   - 継続プレイの確認
+
+## 🏆 天下一武道会（総当たり戦）
+複数のディレクトリに存在するエージェント同士を戦わせるツールです。
+```bash
+python3 budokai.py --strategy original --count 10
+```
+- **オプション**:
+  - `--strategy`: 使用する戦略（`normal` または `original`）を指定します。
+  - `--count`: 各ペアで、先攻・後攻をそれぞれ何回ずつプレイするかを指定します（デフォルト10回、計20試合）。
+- **ルール**:
+  - `.` で始まる隠しディレクトリ以外のすべてのサブディレクトリから `logic.py` を探します。
+  - `original` 以外のディレクトリで `AGENT_NAME` が `"original"` のままの場合、そのエージェントは失格となります。
+  - エージェントが実行中に例外を投げた場合、その試合は負けとなります（双方が投げた場合は引き分け）。
 
 ## 🚩 作業フロー（ブランチとPR）
 1. **基準ブランチ**: 運営が指定するブランチ（例: `round_1st`）
@@ -38,9 +57,17 @@ python play.py
 ---
 
 ## 📖 インターフェース仕様
-`GameAgent.get_action` メソッドの仕様は以下の通りです。
+`logic.py` で実装すべきインターフェースは以下の通りです。
 
-### 引数
+### 定数
+- `AGENT_NAME` (str): エージェントの識別名。参加者は自分自身の名前に書き換えてください。※`original` は使用禁止です。
+
+### メソッド
+#### `GameAgent.get_name()`
+- **戻り値**: `str`: `AGENT_NAME` の値を返してください。
+
+#### `GameAgent.get_action(payload_buffer, strategy_type="normal")`
+- **引数**:
 - `payload_buffer` (list): 盤面の状態を表す 9 要素のリスト。
   - `None`: 空きマス
   - `"O"`: プレイヤーOのマーク

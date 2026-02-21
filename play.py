@@ -1,5 +1,18 @@
 import sys
-from logic import GameAgent
+import os
+import argparse
+import importlib.util
+
+def load_game_agent(directory):
+    logic_path = os.path.join(directory, "logic.py")
+    if not os.path.exists(logic_path):
+        print(f"Error: {logic_path} not found.")
+        sys.exit(1)
+
+    spec = importlib.util.spec_from_file_location("logic", logic_path)
+    logic_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(logic_module)
+    return logic_module.GameAgent
 
 def print_board(board):
     print("\n")
@@ -23,7 +36,7 @@ def check_winner(board):
         return "Draw"
     return None
 
-def play_game():
+def play_game(agent_class):
     while True:
         print("\n=== 三目並べ: 人間 vs AI ===")
 
@@ -47,7 +60,7 @@ def play_game():
             ai_mark = "X"
             turn = "Human"
 
-        agent = GameAgent(mark=ai_mark)
+        agent = agent_class(mark=ai_mark)
         board = [None] * 9
 
         while True:
@@ -92,4 +105,9 @@ def play_game():
             break
 
 if __name__ == "__main__":
-    play_game()
+    parser = argparse.ArgumentParser(description='Tic-Tac-Toe Human vs AI')
+    parser.add_argument('--dir', type=str, default='original', help='Directory containing logic.py')
+    args = parser.parse_args()
+
+    AgentClass = load_game_agent(args.dir)
+    play_game(AgentClass)
