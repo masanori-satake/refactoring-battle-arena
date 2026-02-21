@@ -28,10 +28,10 @@ def play_game():
         print("\n=== 三目並べ: 人間 vs AI ===")
 
         print("\nAIの戦略を選択してください:")
-        print("1: デフォルト (ランダム)")
-        print("2: 勝利優先 (リーチがあれば取る/防ぐ)")
+        print("1: デフォルト")
+        print("2: オリジナル")
         strat_choice = input("選択 (1 or 2): ")
-        strategy_type = "win_priority" if strat_choice == "2" else "normal"
+        strategy_type = "original" if strat_choice == "2" else "normal"
 
         print("\n先攻・後攻を選択してください:")
         print("1: 人間 (O)")

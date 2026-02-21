@@ -32,7 +32,7 @@ class GameAgent:
             return None
 
         # 戦略の判定
-        if strategy == "win_priority" or strategy == "high_availability_mode":
+        if strategy == "original" or strategy == "high_availability_mode":
             # 勝利または阻止のロジック
 
             # 自分の勝利チェック
