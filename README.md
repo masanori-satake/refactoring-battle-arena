@@ -43,7 +43,8 @@ pytest --cov=original test_logic.py
 ```
 
 ## 🎮 対戦ツールの実行方法
-作成したエージェントと実際にターミナル上で対戦して動作を確認することができます。
+作成したエージェントと実際にターミナル上で対戦して動作を確認することができます。**このツールは Python (`logic.py`) と JavaScript (`logic.js`) のどちらのロジックでも共通して利用できます。**
+
 ```bash
 # デフォルト (originalディレクトリ) のエージェントと対戦
 python3 play.py
@@ -58,7 +59,8 @@ python3 play.py --dir participant1
   - 継続プレイの確認
 
 ## 🏆 天下一武道会（総当たり戦）
-複数のディレクトリに存在するエージェント同士を戦わせるツールです。
+複数のディレクトリに存在するエージェント同士を戦わせるツールです。**Python 同士、JavaScript 同士だけでなく、Python 対 JavaScript の異種言語間対戦も可能です。**
+
 ```bash
 python3 budokai.py --strategy original --count 10
 ```
@@ -66,7 +68,7 @@ python3 budokai.py --strategy original --count 10
   - `--strategy`: 使用する戦略（`normal` または `original`）を指定します。
   - `--count`: 各ペアで、先攻・後攻をそれぞれ何回ずつプレイするかを指定します（デフォルト10回、計20試合）。
 - **ルール**:
-  - `.` で始まる隠しディレクトリ以外のすべてのサブディレクトリから `logic.py` を探します。
+  - `.` で始まる隠しディレクトリ以外のすべてのサブディレクトリから `logic.py` または `logic.js` を探します。
   - `original` 以外のディレクトリで `AGENT_NAME` が `"original"` のままの場合、そのエージェントは失格となります。
   - エージェントが実行中に例外を投げた場合、その試合は負けとなります（双方が投げた場合は引き分け）。
 
