@@ -233,4 +233,35 @@ sequenceDiagram
 
 ---
 
+## 🔐 閉じたネットワーク（オンプレミス）での活用
+
+もしあなたが「npmjs.com には公開されていない内製の ESLint プラグイン」などを、社内のオンプレミスなリポジトリやローカル環境から取得して使いたい場合も、`pre-commit` は柔軟に対応できます。
+
+### 1. ローカルパスの指定
+`additional_dependencies` には、パッケージ名だけでなくローカルのファイルパス（`file:./libs/my-plugin` など）を指定することも可能です。`pre-commit` はこれを受けて、`npm install <path>` を実行し、仮想環境内へ取り込みます。
+
+### 2. プライベートレジストリの切り替え
+`npm` の取得先（レジストリ）を社内のサーバーに切り替えたい場合は、環境変数 `NPM_CONFIG_REGISTRY` を活用します。`pre-commit` が `npm install` を実行する際、この環境変数が参照されるため、パッケージの取得先が自動的にオンプレミスなサーバーへと切り替わります。
+
+![Diagram](images/auto-generated/mermaid-a18bcdcf4022b64981d898e9c6cc820a.png)
+```mermaid
+graph LR
+    subgraph "Local / Intranet"
+        PLUGIN[内製プラグイン / Path]
+        REGISTRY[社内 npm レジストリ]
+    end
+
+    PC[pre-commit] -- "NPM_CONFIG_REGISTRY" --> REGISTRY
+    PC -- "file:..." --> PLUGIN
+
+    PC --> ENV[仮想環境]
+    REGISTRY --> ENV
+    PLUGIN --> ENV
+```
+
+> **💡 コラム: .npmrc の役割**
+> プロジェクトルートに `.npmrc` ファイルを置いて `registry=...` を記述しておく方法もあります。`pre-commit` の仮想環境内であっても、`npm` は実行ディレクトリの `.npmrc` を読み込むため、確実に社内サーバーを見に行くように設定できます。
+
+---
+
 このアーキテクチャのおかげで、私たちは言語の壁だけでなく、環境構築の壁も越えて、安全かつ迅速に開発を進めることができるのです。さあ、あなたも `logic.js` を作って、このポリグロットな世界に飛び込んでみましょう！
