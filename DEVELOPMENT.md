@@ -27,10 +27,10 @@
 Python のテスト（`tests/test_*.py`）を実行します。ルートディレクトリにパスを通すため、`PYTHONPATH=.` を付与して実行してください。
 
 ```bash
-# デフォルト (original_pyディレクトリ) のテスト
+# 全てのエージェント（ディレクトリ内の logic.py または logic.js）をテスト
 PYTHONPATH=. pytest tests/test_logic.py
 
-# Pythonエージェントのテスト
+# 特定のエージェントのみをテストする場合
 AGENT_DIR=participant_py PYTHONPATH=. pytest tests/test_logic.py
 
 # JavaScriptエージェントのテスト (Pythonのテストコード経由でJSロジックを確認)
