@@ -44,7 +44,7 @@ graph LR
 
 `loader.py` は、指定されたディレクトリに `logic.py` があれば Python 版を、 `logic.js` があれば JavaScript 版（`JsGameAgent`）を自動的に選択します。
 
-![Diagram](images/auto-generated/mermaid-8a47993dca429b31c4c5bbc63f5d78bb.png)
+![Diagram](images/auto-generated/mermaid-0bccf238b5723befd9094d1cf50124a4.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -81,7 +81,7 @@ sequenceDiagram
 
 ゲーム中、次の手を選ぶ際のやり取りは「JSON-RPC」のような形式で行われます。
 
-![Diagram](images/auto-generated/mermaid-68a75ef04d4d0eb583c99c9f9a54979d.png)
+![Diagram](images/auto-generated/mermaid-3ec4878fecf6ed5de7f09546b01bc27c.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -110,7 +110,7 @@ Python と Node.js の間では、以下のルートでデータが流れます�
 
 もし `logic.js` の中でエラー（例外）が発生したり、Node.js プロセスがクラッシュしたりした場合はどうなるでしょうか？
 
-![Diagram](images/auto-generated/mermaid-33153039e0478c4b8e0eb0c5ff589afa.png)
+![Diagram](images/auto-generated/mermaid-cca30601846da2351e155874feb418e2.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -181,7 +181,7 @@ Windows と Linux/macOS の両方で動作させるために、以下の工夫�
 ### 🏗️ 環境の分離とキャッシュ
 `pre-commit` は、フックの実行に必要な環境をホスト環境（あなたのPCのグローバルな環境）から完全に切り離し、専用のキャッシュディレクトリ（通常は `~/.cache/pre-commit`）に構築します。
 
-![Diagram](images/auto-generated/mermaid-7ec00e5575560b14b83b3584dcda4e91.png)
+![Diagram](images/auto-generated/mermaid-e5d56b8205c48ed2d7a3a8d0f00509e1.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -210,7 +210,7 @@ graph TD
 
 ESLint や Mermaid 変換ツールがどのように呼び出されるか、その裏側を見てみましょう。
 
-![Diagram](images/auto-generated/mermaid-9eb66396897f3ad62c2398a2efb285a8.png)
+![Diagram](images/auto-generated/mermaid-b1d1af6f7bea6d1c5658af60176a6bf9.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -267,7 +267,7 @@ sequenceDiagram
 ### 2. プライベートレジストリの切り替え
 `npm` の取得先（レジストリ）を社内のサーバーに切り替えたい場合は、環境変数 `NPM_CONFIG_REGISTRY` を活用します。`pre-commit` が `npm install` を実行する際、この環境変数が参照されるため、パッケージの取得先が自動的にオンプレミスなサーバーへと切り替わります。
 
-![Diagram](images/auto-generated/mermaid-a18bcdcf4022b64981d898e9c6cc820a.png)
+![Diagram](images/auto-generated/mermaid-834302d6df450e4f602b134749ed4b49.png)
 <details>
 <summary>Mermaid source</summary>
 
