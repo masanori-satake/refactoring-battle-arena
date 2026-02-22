@@ -33,7 +33,8 @@ def process_markdown_file(filepath):
     # Mermaidブロックを抽出
     # グループ1: 前にある既存の画像リンク（あれば）
     # グループ2: Mermaidブロック本体
-    pattern = re.compile(r'(?:!\[Diagram\]\((.*?)\)\s*\n)?```mermaid\n(.*?)\n```', re.DOTALL)
+    # <details>タグで囲まれている場合も考慮
+    pattern = re.compile(r'(?:!\[Diagram\]\((.*?)\)\s*\n)?(?:<details>\s*\n<summary>.*?</summary>\s*\n\n)?```mermaid\n(.*?)\n```(?:\s*\n</details>)?', re.DOTALL)
 
     mermaid_cli = get_mermaid_cli()
 
@@ -73,7 +74,8 @@ def process_markdown_file(filepath):
 
         # Markdown内のリンクを更新
         rel_image_path = os.path.relpath(image_path, os.path.dirname(filepath)).replace(os.sep, '/')
-        return f"![Diagram]({rel_image_path})\n```mermaid\n{mermaid_code}\n```"
+        # Mermaidコードを <details> タグで折りたたむ
+        return f"![Diagram]({rel_image_path})\n<details>\n<summary>Mermaid source</summary>\n\n```mermaid\n{mermaid_code}\n```\n</details>"
 
     new_content = pattern.sub(replace_mermaid, content)
 

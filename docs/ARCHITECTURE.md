@@ -11,6 +11,9 @@
 全体の構成は、Python 側の「親（ホスト）」が JavaScript 側の「子（エージェント）」をコントロールする形になっています。
 
 ![Diagram](images/auto-generated/mermaid-180b2df2f711e6413260e8e37be65242.png)
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 graph LR
     subgraph "Python World (Host)"
@@ -28,6 +31,7 @@ graph LR
     style P_CLI fill:#f9f,stroke:#333
     style JS_LOGIC fill:#bbf,stroke:#333
 ```
+</details>
 
 > **💡 コラム: ポリグロット (Polyglot) とは？**
 > 「複数の言語を話す」という意味です。ITの世界では、一つのシステムの中で複数のプログラミング言語を組み合わせて使う構成を指します。各言語の得意分野（PythonのAIライブラリ、JSのWeb表現力など）を活かせるメリットがあります。
@@ -41,6 +45,9 @@ graph LR
 `loader.py` は、指定されたディレクトリに `logic.py` があれば Python 版を、 `logic.js` があれば JavaScript 版（`JsGameAgent`）を自動的に選択します。
 
 ![Diagram](images/auto-generated/mermaid-8a47993dca429b31c4c5bbc63f5d78bb.png)
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 sequenceDiagram
     participant Main as play.py / budokai.py
@@ -63,6 +70,7 @@ sequenceDiagram
     Node-->>JS_Agent: {"result": "my-js-agent"}
     JS_Agent-->>Main: "my-js-agent"
 ```
+</details>
 
 ### 🌉 ブリッジ・コードの工夫
 `JsGameAgent` は Node.js プロセスを立ち上げる際、 `-e` オプションを使用して**インラインで JavaScript の待受用コード（ブリッジ・コード）を流し込んでいます**。これにより、別途 JS ファイルを用意することなく、動的に Python から JS の世界を繋ぐことができます。
@@ -74,6 +82,9 @@ sequenceDiagram
 ゲーム中、次の手を選ぶ際のやり取りは「JSON-RPC」のような形式で行われます。
 
 ![Diagram](images/auto-generated/mermaid-68a75ef04d4d0eb583c99c9f9a54979d.png)
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 sequenceDiagram
     participant P as Python (JsGameAgent)
@@ -83,6 +94,7 @@ sequenceDiagram
     Note right of J: logic.js の get_action を呼び出し
     J-->>P: {"result": 4}
 ```
+</details>
 
 ### 🛠️ データの通り道: 標準入出力
 Python と Node.js の間では、以下のルートでデータが流れます。
@@ -99,6 +111,9 @@ Python と Node.js の間では、以下のルートでデータが流れます�
 もし `logic.js` の中でエラー（例外）が発生したり、Node.js プロセスがクラッシュしたりした場合はどうなるでしょうか？
 
 ![Diagram](images/auto-generated/mermaid-33153039e0478c4b8e0eb0c5ff589afa.png)
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 sequenceDiagram
     participant P as Python (JsGameAgent)
@@ -112,6 +127,7 @@ sequenceDiagram
     deactivate J
     Note left of P: RuntimeError を送出
 ```
+</details>
 
 ### プロセスの死活監視
 `JsGameAgent` は、Node.js プロセスにデータを送る前に必ずプロセスの状態をチェックしています。
@@ -166,6 +182,9 @@ Windows と Linux/macOS の両方で動作させるために、以下の工夫�
 `pre-commit` は、フックの実行に必要な環境をホスト環境（あなたのPCのグローバルな環境）から完全に切り離し、専用のキャッシュディレクトリ（通常は `~/.cache/pre-commit`）に構築します。
 
 ![Diagram](images/auto-generated/mermaid-7ec00e5575560b14b83b3584dcda4e91.png)
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 graph TD
     PC[pre-commit 管理者] --> ENV_P[Python 仮想環境]
@@ -182,6 +201,7 @@ graph TD
     HOOK_PY --> PY_BIN
     HOOK_JS --> JS_BIN
 ```
+</details>
 
 > **💡 コラム: 仮想環境の正体**
 > `pre-commit` は、Python の場合は `virtualenv`、Node.js の場合は `nodeenv` というツールを使用して、最小限のバイナリとライブラリを含む独立したフォルダを作成します。実行時には、このフォルダ内の `bin`（または `Scripts`）ディレクトリを一時的に `PATH` 環境変数の先頭に追加することで、正しいバージョンのツールが優先的に呼び出されるようにしています。
@@ -191,6 +211,9 @@ graph TD
 ESLint や Mermaid 変換ツールがどのように呼び出されるか、その裏側を見てみましょう。
 
 ![Diagram](images/auto-generated/mermaid-9eb66396897f3ad62c2398a2efb285a8.png)
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 sequenceDiagram
     participant Dev as 開発者
@@ -221,6 +244,7 @@ sequenceDiagram
         PC-->>Dev: コミットをブロック + エラー表示
     end
 ```
+</details>
 
 ### 🔍 なぜ「インストール不要」で動くのか？
 
@@ -244,6 +268,9 @@ sequenceDiagram
 `npm` の取得先（レジストリ）を社内のサーバーに切り替えたい場合は、環境変数 `NPM_CONFIG_REGISTRY` を活用します。`pre-commit` が `npm install` を実行する際、この環境変数が参照されるため、パッケージの取得先が自動的にオンプレミスなサーバーへと切り替わります。
 
 ![Diagram](images/auto-generated/mermaid-a18bcdcf4022b64981d898e9c6cc820a.png)
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 graph LR
     subgraph "Local / Intranet"
@@ -258,6 +285,7 @@ graph LR
     REGISTRY --> ENV
     PLUGIN --> ENV
 ```
+</details>
 
 > **💡 コラム: .npmrc の役割**
 > プロジェクトルートに `.npmrc` ファイルを置いて `registry=...` を記述しておく方法もあります。`pre-commit` の仮想環境内であっても、`npm` は実行ディレクトリの `.npmrc` を読み込むため、確実に社内サーバーを見に行くように設定できます。
