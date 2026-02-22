@@ -1,6 +1,5 @@
 import pytest
 import os
-import sys
 from loader import get_agent_class
 
 def get_all_agents():
