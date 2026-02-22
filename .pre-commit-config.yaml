@@ -24,6 +24,14 @@ repos:
         pass_filenames: false
         verbose: true
 
+      - id: mermaid-gen
+        name: Generate Mermaid Diagrams
+        description: Markdown中のMermaidブロックをPNG画像に変換し、リンクを挿入します。
+        entry: python docs/generate_mermaid_images.py
+        language: node
+        additional_dependencies: ["@mermaid-js/mermaid-cli@11.12.0"]
+        pass_filenames: false
+
       - id: budokai
         name: 天下一武道会 (Tournament)
         description: "Node.jsのセットアップとbudokai.pyの実行を自動化します。"

@@ -1,0 +1,159 @@
+# 🏗 ポリグロット・アーキテクチャ・ガイド
+
+本プロジェクトでは、Python と JavaScript という異なる言語で書かれたエージェントを、あたかも同じ言語で書かれているかのように透過的に扱う仕組み（ポリグロット構成）を導入しています。
+
+このドキュメントでは、その魔法のような仕組みの裏側を、図解を交えて詳しく解説します。これから新しい言語をサポートしたい、あるいは異なる言語間の連携を学びたいエンジニアの皆さんにとって、非常に有用な情報が詰まっています。
+
+---
+
+## 🌍 全体像
+
+全体の構成は、Python 側の「親（ホスト）」が JavaScript 側の「子（エージェント）」をコントロールする形になっています。
+
+![Diagram](images/auto-generated/mermaid-180b2df2f711e6413260e8e37be65242.png)
+```mermaid
+graph LR
+    subgraph "Python World (Host)"
+        P_CLI[play.py / budokai.py] --> P_LOADER[loader.py]
+        P_LOADER --> P_JS_AGENT[JsGameAgent]
+    end
+
+    subgraph "Node.js World (Agent)"
+        P_JS_AGENT -- "Standard Input (JSON)" --> JS_BRIDGE[Bridge Logic]
+        JS_BRIDGE -- "get_action()" --> JS_LOGIC[logic.js]
+        JS_LOGIC -- "Result" --> JS_BRIDGE
+        JS_BRIDGE -- "Standard Output (JSON)" --> P_JS_AGENT
+    end
+
+    style P_CLI fill:#f9f,stroke:#333
+    style JS_LOGIC fill:#bbf,stroke:#333
+```
+
+> **💡 コラム: ポリグロット (Polyglot) とは？**
+> 「複数の言語を話す」という意味です。ITの世界では、一つのシステムの中で複数のプログラミング言語を組み合わせて使う構成を指します。各言語の得意分野（PythonのAIライブラリ、JSのWeb表現力など）を活かせるメリットがあります。
+
+---
+
+## 🚀 エージェントのロードと初期化
+
+エージェントがどのようにロードされるか、そのシーケンス（手順）を見てみましょう。
+
+`loader.py` は、指定されたディレクトリに `logic.py` があれば Python 版を、 `logic.js` があれば JavaScript 版（`JsGameAgent`）を自動的に選択します。
+
+![Diagram](images/auto-generated/mermaid-8a47993dca429b31c4c5bbc63f5d78bb.png)
+```mermaid
+sequenceDiagram
+    participant Main as play.py / budokai.py
+    participant Loader as loader.py
+    participant JS_Agent as JsGameAgent (Python)
+    participant Node as Node.js Process
+
+    Main->>Loader: get_agent_class(dir)
+    Loader->>Main: GameAgent Class (or Lambda)
+
+    Main->>JS_Agent: __init__(mark)
+    JS_Agent->>Node: Spawn process (node -e 'bridge_code')
+    activate Node
+    JS_Agent->>Node: Send {"method": "init", "mark": "O"}
+    Node->>Node: new GameAgent("O")
+    Node-->>JS_Agent: {"status": "ok"}
+    deactivate Node
+    Main->>JS_Agent: get_name()
+    JS_Agent->>Node: Send {"method": "get_name"}
+    Node-->>JS_Agent: {"result": "my-js-agent"}
+    JS_Agent-->>Main: "my-js-agent"
+```
+
+### 🌉 ブリッジ・コードの工夫
+`JsGameAgent` は Node.js プロセスを立ち上げる際、 `-e` オプションを使用して**インラインで JavaScript の待受用コード（ブリッジ・コード）を流し込んでいます**。これにより、別途 JS ファイルを用意することなく、動的に Python から JS の世界を繋ぐことができます。
+
+---
+
+## 🧠 思考（get_action）のやり取り
+
+ゲーム中、次の手を選ぶ際のやり取りは「JSON-RPC」のような形式で行われます。
+
+![Diagram](images/auto-generated/mermaid-68a75ef04d4d0eb583c99c9f9a54979d.png)
+```mermaid
+sequenceDiagram
+    participant P as Python (JsGameAgent)
+    participant J as Node.js (Bridge)
+
+    P->>J: {"method": "get_action", "payload": [null, "O", ...], "strategy": "normal"}
+    Note right of J: logic.js の get_action を呼び出し
+    J-->>P: {"result": 4}
+```
+
+### 🛠️ データの通り道: 標準入出力
+Python と Node.js の間では、以下のルートでデータが流れます。
+1. **Python `stdin.write()`** -> Node.js の標準入力へ
+2. **Node.js `console.log()`** -> Python の `stdout.readline()` へ
+
+> **💡 コラム: JSON-RPC とは？**
+> JSON形式を使って、別の場所（プロセスやサーバー）にある関数を呼び出すためのシンプルな規約です。「どの関数を（method）」「どんな引数で（params/payload）」呼び出すかを送ります。
+
+---
+
+## ⚠️ 異常系とエラーハンドリング
+
+もし `logic.js` の中でエラー（例外）が発生したり、Node.js プロセスがクラッシュしたりした場合はどうなるでしょうか？
+
+![Diagram](images/auto-generated/mermaid-33153039e0478c4b8e0eb0c5ff589afa.png)
+```mermaid
+sequenceDiagram
+    participant P as Python (JsGameAgent)
+    participant J as Node.js (Bridge)
+
+    P->>J: {"method": "get_action", ...}
+    activate J
+    Note right of J: logic.js で例外発生！
+    J->>J: try-catch で捕捉
+    J-->>P: {"error": "Unexpected token..."}
+    deactivate J
+    Note left of P: RuntimeError を送出
+```
+
+### プロセスの死活監視
+`JsGameAgent` は、Node.js プロセスにデータを送る前に必ずプロセスの状態をチェックしています。
+- プロセスが予期せず終了していた場合（`poll()` が None でない場合）、 `RuntimeError` を発生させます。
+- 読み取り時にデータが空だった場合も、 `stderr`（標準エラー出力）からエラー内容を読み取って報告します。
+
+---
+
+## 📦 やり取りされるデータの詳細仕様
+
+詳細な設計の参考に、やり取りされる JSON の構造を記します。
+
+### 1. 初期化 (`init`)
+- **送信**: `{ "method": "init", "mark": "O" | "X" }`
+- **返信**: `{ "status": "ok" }`
+
+### 2. 名前取得 (`get_name`)
+- **送信**: `{ "method": "get_name" }`
+- **返信**: `{ "result": "エージェント名" }`
+
+### 3. 行動取得 (`get_action`)
+- **送信**:
+  ```json
+  {
+    "method": "get_action",
+    "payload": [null, "O", "X", null, ...],
+    "strategy": "normal" | "original"
+  }
+  ```
+- **返信**: `{ "result": 0 }` (マスのインデックス)
+
+---
+
+## 💻 クロスプラットフォームへの配慮
+
+Windows と Linux/macOS の両方で動作させるために、以下の工夫を凝らしています。
+
+1. **実行ファイルの探索**: `shutil.which('node')` を使い、OSごとの `node` または `node.exe` の場所を自動で見つけます。
+2. **パスのエスケープ**: `json.dumps()` を使ってパスを文字列化することで、Windows のバックスラッシュ (`\`) が JS の文字列内で正しく扱われるようにしています。
+3. **文字コード**: `encoding='utf-8'` を明示し、日本語（エージェント名など）が文字化けしないようにしています。
+4. **プロセスのクリーンアップ**: Python 側の `__del__`（デストラクタ）で、Node.js プロセスを確実に終了させるようにしています。
+
+---
+
+このアーキテクチャのおかげで、私たちは言語の壁を越えて対戦させ、切磋琢磨することができるのです。さあ、あなたも `logic.js` を作って、このポリグロットな世界に飛び込んでみましょう！
