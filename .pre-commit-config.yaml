@@ -4,21 +4,22 @@ repos:
       - id: python-tests
         name: Python Agent Tests
         description: 全てのエージェントに対してPythonのテストを実行します。
-        entry: env PYTHONPATH=. python3 -X utf8 -m pytest tests/test_logic.py
+        entry: python3 -X utf8 -m pytest tests/test_logic.py
         language: node
         pass_filenames: false
 
       - id: js-tests
         name: JavaScript Tests
         description: JavaScriptのテストを実行します。
-        entry: npm test
+        entry: jest
         language: node
+        additional_dependencies: [jest@29.7.0]
         pass_filenames: false
 
       - id: coverage
         name: Python Coverage
         description: Pythonエージェントのカバレッジを測定します。
-        entry: env AGENT_DIR=original_py PYTHONPATH=. python3 -X utf8 -m pytest --cov=original_py tests/test_logic.py
+        entry: python3 -X utf8 -c "import os, subprocess, sys; os.environ.update({'AGENT_DIR':'original_py'}); subprocess.run([sys.executable, '-X', 'utf8', '-m', 'pytest', '--cov=original_py', 'tests/test_logic.py'], check=True)"
         language: node
         pass_filenames: false
         verbose: true
