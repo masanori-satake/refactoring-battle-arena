@@ -4,7 +4,7 @@ repos:
       - id: python-tests
         name: Python Agent Tests
         description: 全てのエージェントに対してPythonのテストを実行します。
-        entry: python3 -X utf8 -m pytest tests/test_logic.py
+        entry: python -X utf8 -m pytest tests/test_logic.py
         language: node
         pass_filenames: false
 
@@ -19,7 +19,7 @@ repos:
       - id: coverage
         name: Python Coverage
         description: Pythonエージェントのカバレッジを測定します。
-        entry: python3 -X utf8 -c "import os, subprocess, sys; os.environ.update({'AGENT_DIR':'original_py'}); subprocess.run([sys.executable, '-X', 'utf8', '-m', 'pytest', '--cov=original_py', 'tests/test_logic.py'], check=True)"
+        entry: python -X utf8 -c "import os, subprocess, sys; os.environ.update({'AGENT_DIR':'original_py'}); subprocess.run([sys.executable, '-X', 'utf8', '-m', 'pytest', '--cov=original_py', 'tests/test_logic.py'], check=True)"
         language: node
         pass_filenames: false
         verbose: true
@@ -27,7 +27,7 @@ repos:
       - id: budokai
         name: 天下一武道会 (Tournament)
         description: "Node.jsのセットアップとbudokai.pyの実行を自動化します。"
-        entry: python3 -X utf8 budokai.py
+        entry: python -X utf8 budokai.py
         language: node
         language_version: lts
         pass_filenames: false

@@ -59,13 +59,13 @@ PYTHONPATH=. pytest --cov=original_py tests/test_logic.py
 
 ```bash
 # デフォルト (original_pyディレクトリ) のエージェントと対戦
-python3 play.py
+python play.py
 
 # 盤面サイズを指定して対戦 (例: 5x5)
-python3 play.py --size 5
+python play.py --size 5
 
 # 特定のディレクトリのエージェントと対戦する場合
-python3 play.py --dir participant1
+python play.py --dir participant1
 ```
 - **機能**:
   - 人間 vs AI の対戦（3x3 三目並べ）
@@ -138,7 +138,7 @@ module.exports = { GameAgent };
 複数のディレクトリに存在するエージェント同士を戦わせるツールです。**Python 同士、JavaScript 同士だけでなく、Python 対 JavaScript の異種言語間対戦も可能です。**
 
 ```bash
-python3 budokai.py --strategy original --count 10 --size 3
+python budokai.py --strategy original --count 10 --size 3
 ```
 - **オプション**:
   - `--strategy`: 使用する戦略（`normal` または `original`）を指定します。
@@ -169,4 +169,4 @@ pre-commit run budokai --all-files --hook-stage manual
 1. 必要なバージョンの Node.js のダウンロードとセットアップ（初回のみ）
 2. 指定された引数（デフォルト: `--strategy normal --count 10`）での `budokai.py` の実行
 
-引数を変更したい場合は、`.pre-commit-config.yaml` 内の `args` を編集するか、直接 `python3 budokai.py` を実行してください。
+引数を変更したい場合は、`.pre-commit-config.yaml` 内の `args` を編集するか、直接 `python budokai.py` を実行してください。
