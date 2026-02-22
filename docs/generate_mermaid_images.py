@@ -24,7 +24,9 @@ def get_mermaid_cli():
     return "mmdc" # 最後はフォールバック
 
 def get_mermaid_hash(content):
-    return hashlib.md5(content.strip().encode('utf-8')).hexdigest()
+    # 改行コードをLFに統一してハッシュ計算することで、OS環境に依らず一意な値を生成する
+    normalized_content = content.strip().replace('\r\n', '\n')
+    return hashlib.md5(normalized_content.encode('utf-8')).hexdigest()
 
 def process_markdown_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
