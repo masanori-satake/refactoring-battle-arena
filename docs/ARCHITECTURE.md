@@ -156,4 +156,81 @@ Windows と Linux/macOS の両方で動作させるために、以下の工夫�
 
 ---
 
-このアーキテクチャのおかげで、私たちは言語の壁を越えて対戦させ、切磋琢磨することができるのです。さあ、あなたも `logic.js` を作って、このポリグロットな世界に飛び込んでみましょう！
+## 🛠️ pre-commit による多言語環境の自動構築
+
+本プロジェクトでは、開発者が自身のマシンに Node.js や特定のライブラリを手動でインストールしていなくても、テストやツールを実行できる仕組みとして `pre-commit` を活用しています。
+
+ここでは、`pre-commit` がどのようにして Python と JavaScript の仮想環境を使い分け、依存関係を解決しているのかを解説します。
+
+### 🏗️ 環境の分離とキャッシュ
+`pre-commit` は、フックの実行に必要な環境をホスト環境（あなたのPCのグローバルな環境）から完全に切り離し、専用のキャッシュディレクトリ（通常は `~/.cache/pre-commit`）に構築します。
+
+![Diagram](images/auto-generated/mermaid-7ec00e5575560b14b83b3584dcda4e91.png)
+```mermaid
+graph TD
+    PC[pre-commit 管理者] --> ENV_P[Python 仮想環境]
+    PC --> ENV_JS[Node.js 仮想環境]
+
+    subgraph "環境キャッシュ (~/.cache/pre-commit/)"
+        ENV_P --> PY_BIN[python / pytest / pytest-cov]
+        ENV_JS --> JS_BIN[node / npm / eslint / mmdc]
+    end
+
+    PC -- "フック実行" --> HOOK_PY[Python テストフック]
+    PC -- "フック実行" --> HOOK_JS[ESLint / Mermaid 変換フック]
+
+    HOOK_PY --> PY_BIN
+    HOOK_JS --> JS_BIN
+```
+
+> **💡 コラム: 仮想環境の正体**
+> `pre-commit` は、Python の場合は `virtualenv`、Node.js の場合は `nodeenv` というツールを使用して、最小限のバイナリとライブラリを含む独立したフォルダを作成します。実行時には、このフォルダ内の `bin`（または `Scripts`）ディレクトリを一時的に `PATH` 環境変数の先頭に追加することで、正しいバージョンのツールが優先的に呼び出されるようにしています。
+
+### 🔄 フック実行のライフサイクル（例: ESLint の場合）
+
+ESLint や Mermaid 変換ツールがどのように呼び出されるか、その裏側を見てみましょう。
+
+![Diagram](images/auto-generated/mermaid-9eb66396897f3ad62c2398a2efb285a8.png)
+```mermaid
+sequenceDiagram
+    participant Dev as 開発者
+    participant Git as Git Hook (pre-commit)
+    participant PC as pre-commit Manager
+    participant ENV as 独立した Node.js 環境
+
+    Dev->>Git: git commit
+    Git->>PC: フックのトリガー
+
+    Note over PC: .pre-commit-config.yaml を確認
+
+    alt 環境が未構築の場合
+        PC->>PC: 環境の作成 (nodeenv)
+        PC->>PC: npm install (additional_dependencies)
+    end
+
+    PC->>ENV: PATH 環境変数を設定（環境の有効化）
+    PC->>ENV: 実行コマンド (例: eslint) を発行
+    activate ENV
+    Note right of ENV: 仮想環境内の ESLint が動作
+    ENV-->>PC: 終了コード (0: 成功 / 1: 失敗)
+    deactivate ENV
+
+    alt 成功
+        PC-->>Dev: コミットを許可
+    else 失敗
+        PC-->>Dev: コミットをブロック + エラー表示
+    end
+```
+
+### 🔍 なぜ「インストール不要」で動くのか？
+
+`additional_dependencies` に記述されたパッケージ（例: `@mermaid-js/mermaid-cli`）は、`pre-commit` がそのフック専用の仮想環境内に自動的に `npm install` します。
+
+そのため：
+1. **ホスト汚染がない**: あなたの PC のグローバルな `node_modules` を汚しません。
+2. **バージョン固定**: `package.json` がなくても、`.pre-commit-config.yaml` に書かれたバージョンが確実に使われます。
+3. **パス解決の自動化**: `pre-commit` が仮想環境内の `node_modules/.bin` を自動的に探索するため、開発者はフルパスを意識することなくコマンド名だけでツールを呼び出せます。
+
+---
+
+このアーキテクチャのおかげで、私たちは言語の壁だけでなく、環境構築の壁も越えて、安全かつ迅速に開発を進めることができるのです。さあ、あなたも `logic.js` を作って、このポリグロットな世界に飛び込んでみましょう！
