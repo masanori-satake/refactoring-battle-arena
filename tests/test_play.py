@@ -1,7 +1,5 @@
 import pytest
-import os
-import sys
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from play import check_winner, play_game
 from loader import get_agent_class
 

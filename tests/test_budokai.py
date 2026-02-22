@@ -1,9 +1,7 @@
 import pytest
-import os
-import shutil
 from budokai import check_winner, run_match, main
 from loader import get_agent_class
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 @pytest.mark.parametrize("board, expected", [
     (["O", "O", "O", None, None, None, None, None, None], "O"),
@@ -142,10 +140,14 @@ def test_main_tournament_3_agents_ranking(tmp_path, monkeypatch):
         name_o = ao.get_name()
         name_x = ax.get_name()
 
-        if (name_o == "agentA" and name_x == "agentB"): return 'O'
-        if (name_o == "agentB" and name_x == "agentA"): return 'X'
-        if (name_o == "agentA" and name_x == "agentC"): return 'O'
-        if (name_o == "agentC" and name_x == "agentA"): return 'X'
+        if (name_o == "agentA" and name_x == "agentB"):
+            return 'O'
+        if (name_o == "agentB" and name_x == "agentA"):
+            return 'X'
+        if (name_o == "agentA" and name_x == "agentC"):
+            return 'O'
+        if (name_o == "agentC" and name_x == "agentA"):
+            return 'X'
         return 'Draw'
 
     with patch('budokai.run_match', side_effect=mock_run_match):
@@ -185,10 +187,14 @@ def test_main_tournament_3_agents_top_tie(tmp_path, monkeypatch):
         name_o = ao.get_name()
         name_x = ax.get_name()
 
-        if (name_o == "agentA" and name_x == "agentC"): return 'O'
-        if (name_o == "agentC" and name_x == "agentA"): return 'X'
-        if (name_o == "agentB" and name_x == "agentC"): return 'O'
-        if (name_o == "agentC" and name_x == "agentB"): return 'X'
+        if (name_o == "agentA" and name_x == "agentC"):
+            return 'O'
+        if (name_o == "agentC" and name_x == "agentA"):
+            return 'X'
+        if (name_o == "agentB" and name_x == "agentC"):
+            return 'O'
+        if (name_o == "agentC" and name_x == "agentB"):
+            return 'X'
         return 'Draw'
 
     with patch('budokai.run_match', side_effect=mock_run_match):

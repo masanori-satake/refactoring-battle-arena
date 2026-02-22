@@ -1,11 +1,12 @@
 import os
 import sys
 import argparse
+import io
 
 # 標準出力をUTF-8に設定（Windows環境での文字化け対策）
-if hasattr(sys.stdout, 'reconfigure'):
+if isinstance(sys.stdout, io.TextIOWrapper) and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
-if hasattr(sys.stderr, 'reconfigure'):
+if isinstance(sys.stderr, io.TextIOWrapper) and hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 from collections import defaultdict
 from loader import get_agent_class
@@ -95,7 +96,8 @@ def main():
         # 隠しディレクトリを除外
         dirs[:] = [d for d in dirs if not d.startswith('.')]
         dir_name = os.path.relpath(root, '.')
-        if dir_name == '.': continue # ルートディレクトリをスキップ
+        if dir_name == '.':
+            continue # ルートディレクトリをスキップ
 
         AgentClass = get_agent_class(dir_name)
         if AgentClass:
