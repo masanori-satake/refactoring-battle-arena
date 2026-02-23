@@ -206,13 +206,13 @@ graph TD
 </details>
 
 > **💡 コラム: 仮想環境の正体**
-> `pre-commit` は、Python の場合は `virtualenv`、Node.js の場合は `nodeenv` というツールを使用して、最小限のバイナリとライブラリを含む独立したフォルダを作成します。実行時には、このフォルダ内の `bin`(または `Scripts`)ディレクトリを一時的に `PATH` 環境変数の先頭に追加することで、正しいバージョンのツールが優先的に呼び出されるようにしています。
+> `pre-commit` は、Python の場合は `virtualenv`、Node.js の場合は `nodeenv` というツールを使用して、最小限のバイナリとライブラリを含む独立したフォルダを作成します。実行時には、このフォルダ内の `bin`(または `Scripts`)ディレクトリを一時的に `PATH` 環境変数の先頭に(一瞬だけ)追加することで、指定したバージョンのツールが優先的に呼び出されるようにしています。
 
 ### 🔄 フック実行のライフサイクル(例: ESLint の場合)
 
-ESLint や Mermaid 変換ツールがどのように呼び出されるか、その裏側を見てみましょう。
+ESLint や Mermaid 変換ツールがどのように呼び出されるか、その裏側を見てみます。
 
-![Diagram](images/auto-generated/mermaid-437028aac920f4498aeffdc6731a0c85.png)
+![Diagram](images/auto-generated/mermaid-3f6aec636a30cdd002ba0491bf178998.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -221,19 +221,19 @@ sequenceDiagram
     participant Dev as 開発者
     participant Git as Git Hook (pre-commit)
     participant PC as pre-commit Manager
-    participant ENV as 独立した Node.js 環境
+    participant ENV as Node.js 仮想環境
 
     Dev->>Git: git commit
     Git->>PC: フックのトリガー
 
     Note over PC: .pre-commit-config.yaml を確認
 
-    alt 環境が未構築の場合
-        PC->>PC: 環境の作成 (nodeenv)
+    alt 仮想環境が未構築の場合
+        PC->>PC: 仮想環境の作成 (nodeenv)
         PC->>PC: npm install (additional_dependencies)
     end
 
-    PC->>ENV: PATH 環境変数を設定(環境の有効化)
+    PC->>ENV: PATH 環境変数を設定(仮想環境の有効化)
     PC->>ENV: 実行コマンド (例: eslint) を発行
     activate ENV
     Note right of ENV: 仮想環境内の ESLint が動作
@@ -253,7 +253,7 @@ sequenceDiagram
 `additional_dependencies` に記述されたパッケージ(例: `@mermaid-js/mermaid-cli`)は、`pre-commit` がそのフック専用の仮想環境内に自動的に `npm install` します。
 
 そのため：
-1. **ホスト汚染がない**: あなたの PC のグローバルな `node_modules` を汚しません。
+1. **ホストPC環境を汚さない**: あなたの PC のグローバルな `node_modules` を汚しません。
 2. **バージョン固定**: `package.json` がなくても、`.pre-commit-config.yaml` に書かれたバージョンが確実に使われます。
 3. **パス解決の自動化**: `pre-commit` が仮想環境内の `node_modules/.bin` を自動的に探索するため、開発者はフルパスを意識することなくコマンド名だけでツールを呼び出せます。
 
@@ -269,7 +269,7 @@ sequenceDiagram
 ### 2. プライベートレジストリの切り替え
 `npm` の取得先(レジストリ)を社内のサーバーに切り替えたい場合は、環境変数 `NPM_CONFIG_REGISTRY` を活用します。`pre-commit` が `npm install` を実行する際、この環境変数が参照されるため、パッケージの取得先が自動的にオンプレミスなサーバーへと切り替わります。
 
-![Diagram](images/auto-generated/mermaid-834302d6df450e4f602b134749ed4b49.png)
+![Diagram](images/auto-generated/mermaid-e3cbe33b49ce085bfe14ae6e74d525e8.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -283,7 +283,7 @@ graph LR
     PC[pre-commit] -- "NPM_CONFIG_REGISTRY" --> REGISTRY
     PC -- "file:..." --> PLUGIN
 
-    PC --> ENV[仮想環境]
+    PC --> ENV[Node.js 仮想環境]
     REGISTRY --> ENV
     PLUGIN --> ENV
 ```
@@ -294,4 +294,4 @@ graph LR
 
 ---
 
-このアーキテクチャのおかげで、私たちは言語の壁だけでなく、環境構築の壁も越えて、安全かつ迅速に開発を進めることができるのです。さあ、あなたも `logic.js` を作って、このポリグロットな世界に飛び込んでみましょう！
+このアーキテクチャのおかげで、プログラミング言語の壁だけでなく、環境構築の壁も越えて、安全かつ迅速に開発を進めることができます。ぜひ `logic.js` でロジックを実装し、ポリグロットな環境を体験してください。
