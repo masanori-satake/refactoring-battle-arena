@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import io
+import random
 
 # 標準出力をUTF-8に設定（Windows環境での文字化け対策）
 if isinstance(sys.stdout, io.TextIOWrapper) and hasattr(sys.stdout, 'reconfigure'):
@@ -42,7 +43,7 @@ def check_winner(board, size):
         return "Draw"
     return None
 
-def run_match(agent_o, agent_x, strategy_type, size):
+def run_match(agent_o, agent_x, strategy_type, size, whim_every=0):
     """
     agent_oが勝てば'O'を、agent_xが勝てば'X'を、引き分けなら'Draw'を返します。
     エージェントが例外を投げた場合は負けとなります。
@@ -51,13 +52,24 @@ def run_match(agent_o, agent_x, strategy_type, size):
     board = [None] * (size * size)
 
     turn = 'O'
-    for _ in range(size * size + 1):
+    for i in range(size * size + 1):
         winner = check_winner(board, size)
         if winner:
             return winner
 
         current_agent = agent_o if turn == 'O' else agent_x
         mark = turn
+
+        # 天使の気まぐれ (An angel's whim)
+        is_whim = whim_every > 0 and ((i // 2) + 1) % whim_every == 0
+        if is_whim:
+            available_moves = [idx for idx, cell in enumerate(board) if cell is None]
+            if available_moves:
+                move = random.choice(available_moves)
+                print("🪄", end="", flush=True)
+                board[move] = mark
+                turn = 'X' if turn == 'O' else 'O'
+                continue
 
         try:
             move = current_agent.get_action(board[:], strategy_type=strategy_type)
@@ -88,7 +100,12 @@ def main():
     parser.add_argument('--strategy', type=str, default='normal', help='使用する戦略タイプ (normal/original)')
     parser.add_argument('--count', type=int, default=50, help='各ターン（先攻/後攻）でプレイするゲーム数')
     parser.add_argument('--size', type=int, default=3, help='盤面のサイズ (N x N)')
+    parser.add_argument('--whim-every', type=int, default=3, help='天使の気まぐれ: 何ラウンドごとにランダムな手を指すか (0で無効)')
     args = parser.parse_args()
+
+    whim_every = args.whim_every
+    if whim_every < 0:
+        whim_every = 3
 
     # 全エージェントを検索
     agents_info = []
@@ -145,7 +162,7 @@ def main():
             for _ in range(args.count):
                 a1 = AgentClass1(mark='O')
                 a2 = AgentClass2(mark='X')
-                res = run_match(a1, a2, args.strategy, args.size)
+                res = run_match(a1, a2, args.strategy, args.size, whim_every=whim_every)
                 if res == 'O':
                     results[dir1][dir2]['win'] += 1
                     results[dir2][dir1]['loss'] += 1
@@ -160,7 +177,7 @@ def main():
             for _ in range(args.count):
                 a1 = AgentClass1(mark='X')
                 a2 = AgentClass2(mark='O')
-                res = run_match(a2, a1, args.strategy, args.size)
+                res = run_match(a2, a1, args.strategy, args.size, whim_every=whim_every)
                 if res == 'O': # a2 が勝利
                     results[dir2][dir1]['win'] += 1
                     results[dir1][dir2]['loss'] += 1
@@ -170,6 +187,8 @@ def main():
                 else:
                     results[dir2][dir1]['draw'] += 1
                     results[dir1][dir2]['draw'] += 1
+
+            print() # 各ペアの対戦終了後に改行
 
     # マッチ結果の集計（統計的有意差を考慮）
     match_results = defaultdict(lambda: {'win': 0, 'loss': 0, 'draw': 0})
