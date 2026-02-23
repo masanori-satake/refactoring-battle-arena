@@ -85,6 +85,7 @@ JavaScript で参加する場合、ディレクトリ内に `logic.js` を作成
 - `GameAgent.get_action(payload_buffer, strategy_type="normal")`:
   - 次の手（配置する個所のインデックス: 0-8）を返す。
     - 盤面がN x Nならば0～(N*N-1)の範囲で返す。
+    - 置ける場所がない場合は `None` を返す。
 
 ### JavaScript (`logic.js`)
 `module.exports` を使用して `GameAgent` クラスをエクスポートしてください。
@@ -117,11 +118,24 @@ module.exports = { GameAgent };
 
 ### 共通仕様
 #### `GameAgent.get_action(payload_buffer, strategy_type="normal")`
-- **引数**:
-  - `payload_buffer` (list): 盤面の状態を表す N x N 要素のリスト（3x3なら9要素）。
-    - `None` (JSの場合は `null`): 空きマス
-    - `"O"`: プレイヤーOのマーク
-    - `"X"`: プレイヤーXのマーク
+
+| 項目 | Python での実装 | JavaScript での実装 |
+| :--- | :--- | :--- |
+| **引数 `payload_buffer`** | `list` (要素は `None`, `"O"`, `"X"`) | `Array` (要素は `null`, `"O"`, `"X"`) |
+| **引数 `strategy_type`** | `str` (`"normal"` or `"original"`) | `string` (`"normal"` or `"original"`) |
+| **戻り値 (成功時)** | `int` (0 〜 N*N-1) | `number` (0 〜 N*N-1) |
+| **戻り値 (置ける場所なし/エラー)** | **`None`** | **`null`** |
+
+> [!IMPORTANT]
+> **新人プログラマの方への注意:**
+> 戻り値として `"None"` や `"null"` といった **文字列（String）を返さないでください**。
+> Pythonでは定数の `None` を、JavaScriptでは定数の `null` を直接返す必要があります。文字列を返すと、数値として扱われずエラー（失格）の原因となります。
+
+- **引数の詳細**:
+  - `payload_buffer`: 盤面の状態を表す N x N 要素のリスト（3x3なら9要素）。
+    - `None` (JS: `null`): 空きマス。ここにのみ駒を置けます。
+    - `"O"`: プレイヤーOのマーク。
+    - `"X"`: プレイヤーXのマーク。
     - インデックスと盤面の対応は以下の通りです。
       | | | |
       | :---: | :---: | :---: |
@@ -131,9 +145,6 @@ module.exports = { GameAgent };
   - `strategy_type` (str): 使用する戦略のタイプ。
     - `"normal"`: デフォルト
     - `"original"`: オリジナル
-
-### 戻り値
-- `int` または `None`: 次に置くマスのインデックス (0-8)。置ける場所がない場合は `None`。
 
 ## 🏆 天下一武道会（総当たり戦）
 複数のディレクトリに存在するエージェント同士を戦わせるツールです。**Python 同士、JavaScript 同士だけでなく、Python 対 JavaScript の異種言語間対戦も可能です。**
