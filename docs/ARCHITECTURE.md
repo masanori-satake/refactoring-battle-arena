@@ -1,14 +1,16 @@
 # 🏗 ポリグロット・アーキテクチャ・ガイド
 
-本プロジェクトでは、Python と JavaScript という異なる言語で書かれたエージェントを、あたかも同じ言語で書かれているかのように透過的に扱う仕組み（ポリグロット構成）を導入しています。
+本プロジェクトでは、Python と JavaScript という異なる言語で書かれたエージェントを、あたかも同じ言語で書かれているかのように透過的に扱う仕組み(ポリグロット構成)を導入しています。
 
-このドキュメントでは、その魔法のような仕組みの裏側を、図解を交えて詳しく解説します。これから新しい言語をサポートしたい、あるいは異なる言語間の連携を学びたいエンジニアの皆さんにとって、非常に有用な情報が詰まっています。
+このドキュメントでは、その仕組みの裏側を、図解を交えて詳しく解説します。
+
+既存システムで異なる言語での拡張をサポートしたい、あるいは異なる言語間の連携にトライしたい皆さんにとって、有用な情報かと思います。
 
 ---
 
 ## 🌍 全体像
 
-全体の構成は、Python 側の「親（ホスト）」が JavaScript 側の「子（エージェント）」をコントロールする形になっています。
+全体の構成は、Python 側の「親(ホスト)」が JavaScript 側の「子(エージェント)」をコントロールする形になっています。
 
 ![Diagram](images/auto-generated/mermaid-180b2df2f711e6413260e8e37be65242.png)
 <details>
@@ -34,15 +36,15 @@ graph LR
 </details>
 
 > **💡 コラム: ポリグロット (Polyglot) とは？**
-> 「複数の言語を話す」という意味です。ITの世界では、一つのシステムの中で複数のプログラミング言語を組み合わせて使う構成を指します。各言語の得意分野（PythonのAIライブラリ、JSのWeb表現力など）を活かせるメリットがあります。
+> 「複数の言語を話す」という意味です。一般には、単一のシステムで複数のプログラミング言語を組み合わせて使う構成を指します。各言語の得意分野(Pythonの豊富なAIライブラリ、JSのWeb表現力等)を活かせるメリットがあります。
 
 ---
 
 ## 🚀 エージェントのロードと初期化
 
-エージェントがどのようにロードされるか、そのシーケンス（手順）を見てみましょう。
+エージェントがどのようにロードされるか、そのシーケンスを見てみましょう。
 
-`loader.py` は、指定されたディレクトリに `logic.py` があれば Python 版を、 `logic.js` があれば JavaScript 版（`JsGameAgent`）を自動的に選択します。
+`loader.py` は、指定されたディレクトリに `logic.py` があれば Python 版を、 `logic.js` があれば JavaScript 版(`JsGameAgent`)を自動的に選択します。
 
 ![Diagram](images/auto-generated/mermaid-0bccf238b5723befd9094d1cf50124a4.png)
 <details>
@@ -59,7 +61,7 @@ sequenceDiagram
     Loader->>Main: GameAgent Class (or Lambda)
 
     Main->>JS_Agent: __init__(mark)
-    JS_Agent->>Node: Spawn process (node -e 'bridge_code')
+    JS_Agent->>Node: Spawn process (node -e '(bridge_code)')
     activate Node
     JS_Agent->>Node: Send {"method": "init", "mark": "O"}
     Node->>Node: new GameAgent("O")
@@ -73,11 +75,11 @@ sequenceDiagram
 </details>
 
 ### 🌉 ブリッジ・コードの工夫
-`JsGameAgent` は Node.js プロセスを立ち上げる際、 `-e` オプションを使用して**インラインで JavaScript の待受用コード（ブリッジ・コード）を流し込んでいます**。これにより、別途 JS ファイルを用意することなく、動的に Python から JS の世界を繋ぐことができます。
+`JsGameAgent` は Node.js プロセスを立ち上げる際、 `-e` オプションを使用して**インラインで JavaScript の待受用コード(ブリッジ・コード)を流し込んでいます**。これにより、別途JavaScriptファイルを用意することなく、動的に Python からJavaScriptの世界を繋ぐことができます。
 
 ---
 
-## 🧠 思考（get_action）のやり取り
+## 🧠 思考(get_action)のやり取り
 
 ゲーム中、次の手を選ぶ際のやり取りは「JSON-RPC」のような形式で行われます。
 
@@ -102,13 +104,13 @@ Python と Node.js の間では、以下のルートでデータが流れます�
 2. **Node.js `console.log()`** -> Python の `stdout.readline()` へ
 
 > **💡 コラム: JSON-RPC とは？**
-> JSON形式を使って、別の場所（プロセスやサーバー）にある関数を呼び出すためのシンプルな規約です。「どの関数を（method）」「どんな引数で（params/payload）」呼び出すかを送ります。
+> JSON形式を使って、別の場所(プロセスやサーバー)にある関数を呼び出すためのシンプルな規約です。「どの関数を(method)」「どんな引数で(params/payload)」呼び出すかを送ります。
 
 ---
 
 ## ⚠️ 異常系とエラーハンドリング
 
-もし `logic.js` の中でエラー（例外）が発生したり、Node.js プロセスがクラッシュしたりした場合はどうなるでしょうか？
+もし `logic.js` の中でエラー(例外)が発生したり、Node.js プロセスがクラッシュしたりした場合の振る舞いです。
 
 ![Diagram](images/auto-generated/mermaid-cca30601846da2351e155874feb418e2.png)
 <details>
@@ -125,14 +127,14 @@ sequenceDiagram
     J->>J: try-catch で捕捉
     J-->>P: {"error": "Unexpected token..."}
     deactivate J
-    Note left of P: RuntimeError を送出
+    Note left of P: RuntimeError例外をRaise
 ```
 </details>
 
 ### プロセスの死活監視
 `JsGameAgent` は、Node.js プロセスにデータを送る前に必ずプロセスの状態をチェックしています。
-- プロセスが予期せず終了していた場合（`poll()` が None でない場合）、 `RuntimeError` を発生させます。
-- 読み取り時にデータが空だった場合も、 `stderr`（標準エラー出力）からエラー内容を読み取って報告します。
+- プロセスが予期せず終了していた場合(`poll()` が None でない場合)、 `RuntimeError` を発生させます。
+- 読み取り時にデータが空だった場合も、 `stderr`(標準エラー出力)からエラー内容を読み取って報告します。
 
 ---
 
@@ -166,9 +168,9 @@ sequenceDiagram
 Windows と Linux/macOS の両方で動作させるために、以下の工夫を凝らしています。
 
 1. **実行ファイルの探索**: `shutil.which('node')` を使い、OSごとの `node` または `node.exe` の場所を自動で見つけます。
-2. **パスのエスケープ**: `json.dumps()` を使ってパスを文字列化することで、Windows のバックスラッシュ (`\`) が JS の文字列内で正しく扱われるようにしています。
-3. **文字コード**: `encoding='utf-8'` を明示し、日本語（エージェント名など）が文字化けしないようにしています。
-4. **プロセスのクリーンアップ**: Python 側の `__del__`（デストラクタ）で、Node.js プロセスを確実に終了させるようにしています。
+2. **パスのエスケープ**: `json.dumps()` を使ってパスを文字列化することで、Windows のバックスラッシュ (`\`) がJavaScriptの文字列内で正しく扱われるようにしています。
+3. **文字コード**: `encoding='utf-8'` を明示し、日本語(エージェント名など)が文字化けしないようにしています。
+4. **プロセスのクリーンアップ**: Python 側の `__del__`(デストラクタ)で、Node.js プロセスを確実に終了させるようにしています。
 
 ---
 
@@ -179,7 +181,7 @@ Windows と Linux/macOS の両方で動作させるために、以下の工夫�
 ここでは、`pre-commit` がどのようにして Python と JavaScript の仮想環境を使い分け、依存関係を解決しているのかを解説します。
 
 ### 🏗️ 環境の分離とキャッシュ
-`pre-commit` は、フックの実行に必要な環境をホスト環境（あなたのPCのグローバルな環境）から完全に切り離し、専用のキャッシュディレクトリ（通常は `~/.cache/pre-commit`）に構築します。
+`pre-commit` は、フックの実行に必要な環境をホスト環境(あなたのPCのグローバルな環境)から完全に切り離し、専用のキャッシュディレクトリ(通常は `~/.cache/pre-commit`)に構築します。
 
 ![Diagram](images/auto-generated/mermaid-e5d56b8205c48ed2d7a3a8d0f00509e1.png)
 <details>
@@ -204,9 +206,9 @@ graph TD
 </details>
 
 > **💡 コラム: 仮想環境の正体**
-> `pre-commit` は、Python の場合は `virtualenv`、Node.js の場合は `nodeenv` というツールを使用して、最小限のバイナリとライブラリを含む独立したフォルダを作成します。実行時には、このフォルダ内の `bin`（または `Scripts`）ディレクトリを一時的に `PATH` 環境変数の先頭に追加することで、正しいバージョンのツールが優先的に呼び出されるようにしています。
+> `pre-commit` は、Python の場合は `virtualenv`、Node.js の場合は `nodeenv` というツールを使用して、最小限のバイナリとライブラリを含む独立したフォルダを作成します。実行時には、このフォルダ内の `bin`(または `Scripts`)ディレクトリを一時的に `PATH` 環境変数の先頭に追加することで、正しいバージョンのツールが優先的に呼び出されるようにしています。
 
-### 🔄 フック実行のライフサイクル（例: ESLint の場合）
+### 🔄 フック実行のライフサイクル(例: ESLint の場合)
 
 ESLint や Mermaid 変換ツールがどのように呼び出されるか、その裏側を見てみましょう。
 
@@ -231,7 +233,7 @@ sequenceDiagram
         PC->>PC: npm install (additional_dependencies)
     end
 
-    PC->>ENV: PATH 環境変数を設定（環境の有効化）
+    PC->>ENV: PATH 環境変数を設定(環境の有効化)
     PC->>ENV: 実行コマンド (例: eslint) を発行
     activate ENV
     Note right of ENV: 仮想環境内の ESLint が動作
@@ -248,7 +250,7 @@ sequenceDiagram
 
 ### 🔍 なぜ「インストール不要」で動くのか？
 
-`additional_dependencies` に記述されたパッケージ（例: `@mermaid-js/mermaid-cli`）は、`pre-commit` がそのフック専用の仮想環境内に自動的に `npm install` します。
+`additional_dependencies` に記述されたパッケージ(例: `@mermaid-js/mermaid-cli`)は、`pre-commit` がそのフック専用の仮想環境内に自動的に `npm install` します。
 
 そのため：
 1. **ホスト汚染がない**: あなたの PC のグローバルな `node_modules` を汚しません。
@@ -257,15 +259,15 @@ sequenceDiagram
 
 ---
 
-## 🔐 閉じたネットワーク（オンプレミス）での活用
+## 🔐 閉じたネットワーク(オンプレミス)での活用
 
 もしあなたが「npmjs.com には公開されていない内製の ESLint プラグイン」などを、社内のオンプレミスなリポジトリやローカル環境から取得して使いたい場合も、`pre-commit` は柔軟に対応できます。
 
 ### 1. ローカルパスの指定
-`additional_dependencies` には、パッケージ名だけでなくローカルのファイルパス（`file:./libs/my-plugin` など）を指定することも可能です。`pre-commit` はこれを受けて、`npm install <path>` を実行し、仮想環境内へ取り込みます。
+`additional_dependencies` には、パッケージ名だけでなくローカルのファイルパス(`file:./libs/my-plugin` など)を指定することも可能です。`pre-commit` はこれを受けて、`npm install <path>` を実行し、仮想環境内へ取り込みます。
 
 ### 2. プライベートレジストリの切り替え
-`npm` の取得先（レジストリ）を社内のサーバーに切り替えたい場合は、環境変数 `NPM_CONFIG_REGISTRY` を活用します。`pre-commit` が `npm install` を実行する際、この環境変数が参照されるため、パッケージの取得先が自動的にオンプレミスなサーバーへと切り替わります。
+`npm` の取得先(レジストリ)を社内のサーバーに切り替えたい場合は、環境変数 `NPM_CONFIG_REGISTRY` を活用します。`pre-commit` が `npm install` を実行する際、この環境変数が参照されるため、パッケージの取得先が自動的にオンプレミスなサーバーへと切り替わります。
 
 ![Diagram](images/auto-generated/mermaid-834302d6df450e4f602b134749ed4b49.png)
 <details>

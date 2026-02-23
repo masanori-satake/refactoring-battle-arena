@@ -25,7 +25,7 @@
 | 正常系 | `test_get_agent_class` | 指定したディレクトリからエージェントをロードする | `GameAgent`相当のクラスが正しくロードされる |
 | 異常系 | `test_get_agent_class_not_found` | 存在しないディレクトリを指定してロードを試みる | `None` が返される |
 | 正常系 | `test_play_game_basic` | 対戦メインループ（人間が先攻、1手で勝利） | エラーなく終了し、リトライ確認まで到達する |
-| 正常系 | `test_play_game_ai_first` | 対戦メインループ（AIが先攻） | AIの着手から始まり、正常にゲームが進行する |
+| 正常系 | `test_play_game_ai_first` | 対戦メインループ（エージェントが先攻） | エージェントの着手から始まり、正常にゲームが進行する |
 
 ## 3. test_budokai.py
 総当たり戦ツール（budokai.py）の機能に関するテストです。

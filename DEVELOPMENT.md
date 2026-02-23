@@ -48,20 +48,20 @@ npm install
 npm test
 ```
 
-### テストカバレッジの測定
+### 参考: テストカバレッジの測定(Pythonエージェントのみ)
 テストがコードのどの部分をカバーしているかを確認するには、以下のコマンドを実行します。
 ```bash
 PYTHONPATH=. pytest --cov=original_py tests/test_logic.py
 ```
 
 ## 🎮 対戦ツールの実行方法
-作成したエージェントと実際にターミナル上で対戦して動作を確認することができます。**このツールは Python (`logic.py`) と JavaScript (`logic.js`) のどちらのロジックでも共通して利用できます。**
+作成したエージェントと人間が実際にターミナル上で対戦して動作を確認することができます。<br>**このツールは Python (`logic.py`) と JavaScript (`logic.js`) のどちらのロジックでも共通して利用できます。**
 
 ```bash
 # デフォルト (original_pyディレクトリ) のエージェントと対戦
 python play.py
 
-# 盤面サイズを指定して対戦 (例: 5x5)
+# 盤面サイズを指定して対戦 (Advanced Battle用, 例: 5x5)
 python play.py --size 5
 
 # 特定のディレクトリのエージェントと対戦する場合
@@ -71,7 +71,6 @@ python play.py --dir participant1
   - 人間 vs AI の対戦（3x3 三目並べ）
   - 先攻・後攻の選択
   - 勝敗・引き分けの判定
-  - 継続プレイの確認
 
 ## 📖 インターフェース仕様
 
@@ -83,7 +82,9 @@ JavaScript で参加する場合、ディレクトリ内に `logic.js` を作成
 
 #### メソッド
 - `GameAgent.get_name()`: `AGENT_NAME` を返す。
-- `GameAgent.get_action(payload_buffer, strategy_type="normal")`: 次の手（0-8）を返す。
+- `GameAgent.get_action(payload_buffer, strategy_type="normal")`:
+  - 次の手（配置する個所のインデックス: 0-8）を返す。
+    - 盤面がN x Nならば0～(N*N-1)の範囲で返す。
 
 ### JavaScript (`logic.js`)
 `module.exports` を使用して `GameAgent` クラスをエクスポートしてください。
@@ -148,18 +149,18 @@ python budokai.py --strategy original --count 10 --size 3
   - `.` で始まる隠しディレクトリ以外のすべてのサブディレクトリから `logic.py` または `logic.js` を探します。
   - `original_py` または `original_js` 以外のディレクトリで `AGENT_NAME` が `"original_py"` または `"original_js"` のままの場合、そのエージェントは失格となります。
   - **盤面サイズの上限**: 思考アルゴリズムの計算量によりますが、トーナメントをスムーズに進行させるため、5x5 程度までを推奨します。巨大な盤面で探索が深すぎるとタイムアウトの原因となります。
-  - エージェントが実行中に例外を投げた場合、その試合は負けとなります（双方が投げた場合は引き分け）。
+  - エージェントが実行中に例外を投げた場合、その試合は負けとなります。
   - **順位付け (エージェントが3つ以上の場合)**:
     - 各ペアの対戦結果（統計的有意差に基づく判定）から、以下の順位点を付与します。
       - **勝利: 3点**
       - **引き分け: 1点**
       - **敗北: 0点**
     - 合計得点の多い順にランキングを表示します。
-    - 同点の場合は、そのグループの最下位の順位を採用します（例: 3チーム中、1位が1チーム、残り2チームが同点なら、その2チームは共に「3位」となります）。ただし、最高得点のチームは人数に関わらず「1位」となります。
+    - 同点の場合は、そのグループの最下位の順位を採用します<br>（例: 3チーム中、1位が1チーム、残り2チームが同点なら、その2チームは共に「3位」となります）。<br>ただし、最高得点のチームは人数に関わらず「1位」となります。
 
 ### pre-commit を利用した実行
 Node.js のインストールや環境構築を自動化したい場合は、`pre-commit` を利用することができます。
-この方法は、普段 Python のみを開発しており Node.js を別途インストールするのが手間な場合に便利です。
+<br>この方法は、普段 Python のみを開発しており Node.js を別途インストールするのが手間な場合や環境を汚したくない場合に便利です。
 
 ```bash
 pre-commit run budokai --all-files --hook-stage manual
@@ -169,4 +170,4 @@ pre-commit run budokai --all-files --hook-stage manual
 1. 必要なバージョンの Node.js のダウンロードとセットアップ（初回のみ）
 2. 指定された引数（デフォルト: `--strategy normal --count 10`）での `budokai.py` の実行
 
-引数を変更したい場合は、`.pre-commit-config.yaml` 内の `args` を編集するか、直接 `python budokai.py` を実行してください。
+引数を変更したい場合は、`.pre-commit-config.yaml` 内の `args` を編集してください。
