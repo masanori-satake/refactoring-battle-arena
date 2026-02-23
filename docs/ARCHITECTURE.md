@@ -46,7 +46,7 @@ graph LR
 
 `loader.py` は、指定されたディレクトリに `logic.py` があれば Python 版を、 `logic.js` があれば JavaScript 版(`JsGameAgent`)を自動的に選択します。
 
-![Diagram](images/auto-generated/mermaid-0bccf238b5723befd9094d1cf50124a4.png)
+![Diagram](images/auto-generated/mermaid-58683e24cfe60b9fed17c1e79c431c9e.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -112,7 +112,7 @@ Python と Node.js の間では、以下のルートでデータが流れます�
 
 もし `logic.js` の中でエラー(例外)が発生したり、Node.js プロセスがクラッシュしたりした場合の振る舞いです。
 
-![Diagram](images/auto-generated/mermaid-cca30601846da2351e155874feb418e2.png)
+![Diagram](images/auto-generated/mermaid-b2f592c6873c19c88ebcdd073f8d22b2.png)
 <details>
 <summary>Mermaid source</summary>
 
@@ -212,7 +212,7 @@ graph TD
 
 ESLint や Mermaid 変換ツールがどのように呼び出されるか、その裏側を見てみましょう。
 
-![Diagram](images/auto-generated/mermaid-b1d1af6f7bea6d1c5658af60176a6bf9.png)
+![Diagram](images/auto-generated/mermaid-437028aac920f4498aeffdc6731a0c85.png)
 <details>
 <summary>Mermaid source</summary>
 
