@@ -46,6 +46,27 @@ def test_run_match_exception():
     res = run_match(ErrorAgent("O"), ErrorAgent("X"), "normal", 3)
     assert res == "Draw"
 
+def test_run_match_whim():
+    class DummyAgent:
+        def __init__(self, mark):
+            self.mark = mark
+        def get_action(self, board, strategy_type="normal"):
+            # 常に最初の空きマスを返す
+            return board.index(None)
+
+    # whim_every=1 の場合、全手がランダムになるはず
+    # ただしランダムなので結果は不定。ここでは例外が起きないことと、
+    # 🪄 が出力されることを確認する（実際には run_match 内で print されている）
+    a1 = DummyAgent("O")
+    a2 = DummyAgent("X")
+
+    with patch('builtins.print') as mock_p:
+        res = run_match(a1, a2, "normal", 3, whim_every=1)
+        assert res in ["O", "X", "Draw"]
+        # 🪄 が一回以上出力されているはず
+        all_output = "".join(str(call) for call in mock_p.call_args_list)
+        assert "🪄" in all_output
+
 def test_get_agent_class_budokai(tmp_path):
     d = tmp_path / "test_agent"
     d.mkdir()
