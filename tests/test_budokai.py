@@ -136,7 +136,7 @@ def test_main_tournament_3_agents_ranking(tmp_path, monkeypatch):
     # A vs B: A win (O if A is O, X if A is X)
     # A vs C: A win
     # B vs C: Draw
-    def mock_run_match(ao, ax, strategy, size):
+    def mock_run_match(ao, ax, strategy, size, whim_every=0):
         name_o = ao.get_name()
         name_x = ax.get_name()
 
@@ -183,7 +183,7 @@ def test_main_tournament_3_agents_top_tie(tmp_path, monkeypatch):
     # A vs B: Draw
     # Points: A=4, B=4, C=0
     # Expected Ranks: A=1, B=1, C=3
-    def mock_run_match(ao, ax, strategy, size):
+    def mock_run_match(ao, ax, strategy, size, whim_every=0):
         name_o = ao.get_name()
         name_x = ax.get_name()
 
