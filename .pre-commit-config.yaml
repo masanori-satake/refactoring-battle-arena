@@ -1,3 +1,6 @@
+ci:
+  skip: [mermaid-gen]
+
 repos:
   - repo: local
     hooks:
