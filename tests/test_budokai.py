@@ -132,6 +132,50 @@ class GameAgent:
         all_output = "".join(str(call) for call in mock_p.call_args_list)
         assert "失格 imposter" in all_output
 
+def test_run_match_invalid_move():
+    # 不正な手（すでに埋まっている場所）を返した場合のテスト
+    class InvalidAgent:
+        def __init__(self, mark): pass
+        def get_action(self, board, strategy_type="normal"):
+            return 0 # 常に0を返すが、0はすでに埋まっている
+
+    class NormalAgent:
+        def __init__(self, mark): pass
+        def get_action(self, board, strategy_type="normal"):
+            # 空いている最初のマスを返す
+            return board.index(None)
+
+    # Oが先攻
+    a_o = InvalidAgent("O")
+    a_x = NormalAgent("X")
+
+    # 手順:
+    # 1. Oの番。InvalidAgentが 0 を返す。board[0] = 'O' となる。 (これは成功)
+    # 2. Xの番。NormalAgentが 1 を返す。board[1] = 'X' となる。
+    # 3. Oの番。InvalidAgentが 0 を返す。しかし board[0] は 'O' で埋まっている。
+    # 4. run_match 内で ValueError が発生し、Xの勝利判定が行われる。
+
+    # 実際にそうなるか確認するために少し工夫が必要。
+    # InvalidAgentが *常に* 0を返すと、1手目は成功する。
+
+    res = run_match(a_o, a_x, "normal", 3)
+    assert res == 'X'
+
+def test_run_match_out_of_bounds():
+    # 範囲外の手を返した場合
+    class OutOfBoundsAgent:
+        def __init__(self, mark): pass
+        def get_action(self, board, strategy_type="normal"):
+            return 100 # 3x3盤面では範囲外
+
+    class NormalAgent:
+        def __init__(self, mark): pass
+        def get_action(self, board, strategy_type="normal"):
+            return 0
+
+    res = run_match(OutOfBoundsAgent("O"), NormalAgent("X"), "normal", 3)
+    assert res == 'X'
+
 def create_mock_agent_dir(path, name):
     d = path / name
     d.mkdir()

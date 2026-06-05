@@ -1,3 +1,6 @@
+ci:
+  skip: [mermaid-gen]
+
 repos:
   - repo: local
     hooks:
@@ -5,7 +8,8 @@ repos:
         name: Python Agent Tests
         description: 全てのエージェントに対してPythonのテストを実行します。
         entry: python -X utf8 -m pytest tests/test_logic.py
-        language: node
+        language: python
+        additional_dependencies: [pytest]
         pass_filenames: false
 
       - id: js-tests
@@ -20,7 +24,8 @@ repos:
         name: Python Coverage
         description: Pythonエージェントのカバレッジを測定します。
         entry: python -X utf8 -c "import os, subprocess, sys; os.environ.update({'AGENT_DIR':'original_py'}); subprocess.run([sys.executable, '-X', 'utf8', '-m', 'pytest', '--cov=original_py', 'tests/test_logic.py'], check=True)"
-        language: node
+        language: python
+        additional_dependencies: [pytest, pytest-cov]
         pass_filenames: false
         verbose: true
 

@@ -24,17 +24,20 @@
 本プロジェクトでは `pytest` および `Jest` を使用して動作確認を行います。以下のコマンドでテストを実行できます。
 
 ### Python テスト
-Python のテスト（`tests/test_*.py`）を実行します。ルートディレクトリにパスを通すため、`PYTHONPATH=.` を付与して実行してください。
+Python のテスト（`tests/test_*.py`）を実行します。ルートディレクトリを検索対象に含めるため、`python -m pytest` を使用して実行することを推奨します（クロスプラットフォーム対応）。
 
 ```bash
 # 全てのエージェント（ディレクトリ内の logic.py または logic.js）をテスト
-PYTHONPATH=. pytest tests/test_logic.py
+python -m pytest tests/test_logic.py
 
-# 特定のエージェントのみをテストする場合
-AGENT_DIR=participant_py PYTHONPATH=. pytest tests/test_logic.py
+# 特定のエージェントのみをテストする場合（Windows以外）
+AGENT_DIR=participant_py python -m pytest tests/test_logic.py
+
+# 特定のエージェントのみをテストする場合（Windows PowerShell）
+$env:AGENT_DIR="participant_py"; python -m pytest tests/test_logic.py
 
 # JavaScriptエージェントのテスト (Pythonのテストコード経由でJSロジックを確認)
-AGENT_DIR=participant_js PYTHONPATH=. pytest tests/test_logic.py
+AGENT_DIR=participant_js python -m pytest tests/test_logic.py
 ```
 
 ### JavaScript テスト
@@ -51,7 +54,7 @@ npm test
 ### 参考: テストカバレッジの測定(Pythonエージェントのみ)
 テストがコードのどの部分をカバーしているかを確認するには、以下のコマンドを実行します。
 ```bash
-PYTHONPATH=. pytest --cov=original_py tests/test_logic.py
+python -m pytest --cov=original_py tests/test_logic.py
 ```
 
 ## 🎮 対戦ツールの実行方法
