@@ -64,11 +64,11 @@ def test_action_scenarios(agent_class, board, expected, strategy, mark):
 ])
 def test_large_board_scenarios(agent_class, board, expected, strategy, mark):
     # N x N 盤面への対応テスト (original_py/jsは対応していないためスキップを許容)
-    agent_name = agent_class(mark=mark).get_name()
+    agent = agent_class(mark=mark)
+    agent_name = agent.get_name()
     if agent_name in ("original_py", "original_js"):
         pytest.skip(f"{agent_name} は N x N 盤面に対応していません")
 
-    agent = agent_class(mark=mark)
     assert agent.get_action(board, strategy_type=strategy) == expected
 
 def test_basic_move(agent_class):
