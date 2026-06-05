@@ -45,7 +45,29 @@ def agent_class(request):
     (["O", "X", "O", "O", "X", "O", "X", "O", None], 8, "normal", "O"),
 ])
 def test_action_scenarios(agent_class, board, expected, strategy, mark):
-    # 特定のパターンで期待されるマスを選択するかテスト
+    # 3x3の基本的な着手シナリオのテスト
+    agent = agent_class(mark=mark)
+    assert agent.get_action(board, strategy_type=strategy) == expected
+
+@pytest.mark.parametrize("board, expected, strategy, mark", [
+    # 4x4 盤面での勝利チェック (ocp_py等は対応しているはず)
+    (["O", "O", "O", None,
+      None, None, None, None,
+      None, None, None, None,
+      None, None, None, None], 3, "original", "O"),
+    # 5x5 盤面での阻止チェック
+    (["X", "X", "X", "X", None,
+      None, None, None, None, None,
+      None, None, None, None, None,
+      None, None, None, None, None,
+      None, None, None, None, None], 4, "original", "O"),
+])
+def test_large_board_scenarios(agent_class, board, expected, strategy, mark):
+    # N x N 盤面への対応テスト (original_py/jsは対応していないためスキップを許容)
+    agent_name = agent_class(mark=mark).get_name()
+    if agent_name in ("original_py", "original_js"):
+        pytest.skip(f"{agent_name} は N x N 盤面に対応していません")
+
     agent = agent_class(mark=mark)
     assert agent.get_action(board, strategy_type=strategy) == expected
 

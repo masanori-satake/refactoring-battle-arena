@@ -15,6 +15,7 @@
 | 正常系 | `test_block_diagonal` | 相手に斜めのリーチがある場合、阻止するマスを選択する | 指定したインデックス(8)が返される |
 | 正常系 | `test_agent_as_x` | エージェントが後攻（X）の場合の動作確認 | 期待されるインデックス(2)が返される |
 | 正常系 | `test_valid_move_only` | すでに埋まっているマスは選択しない | 空いているマスのインデックス(8)が返される |
+| 正常系 | `test_large_board_scenarios` | N x N 盤面（4x4, 5x5）での着手判定 | 期待されるインデックスが返される (対応エージェントのみ) |
 
 ## 2. test_play.py
 対戦ツール（play.py）の機能に関するテストです。
@@ -39,6 +40,8 @@
 | 境界値 | `test_get_agent_class_not_found_budokai` | ロジックファイルが存在しないディレクトリを指定 | `None` が返される |
 | 正常系 | `test_main_tournament` | 複数エージェントによるトーナメント全体の実行 | 各エージェントの名前が結果表に含まれる |
 | 異常系 | `test_main_disqualification` | original_py/original_js以外のディレクトリで名前をoriginal_py/original_jsにしているエージェント | 失格メッセージが表示される |
+| 異常系 | `test_run_match_invalid_move` | エージェントがすでに埋まっているマスを返した場合 | 不正な手を指した側が負けとなる |
+| 異常系 | `test_run_match_out_of_bounds` | エージェントが範囲外のインデックスを返した場合 | 不正な手を指した側が負けとなる |
 
 ## 4. logic.test.js
 JavaScriptエージェント（`original_js/logic.js`）に対する Jest 用のテストです。`test_logic.py` と同等のテストシナリオをカバーしています。
